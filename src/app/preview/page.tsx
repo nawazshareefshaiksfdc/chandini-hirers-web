@@ -253,7 +253,7 @@ Attached: PDF summary.`;
           >
             Clear All
           </button> */}
-          <button className="border rounded-xl py-3 disabled:opacity-50" onClick={handleDownloadPdf} disabled={lines.length === 0}>
+          <button className="border rounded-xl py-3 disabled:opacity-50 text-gray-400" onClick={handleDownloadPdf} disabled={lines.length === 0}>
             Download PDF
           </button>
           <button className="bg-green-600 text-white rounded-xl py-3 disabled:opacity-50" onClick={handleShare} disabled={lines.length === 0}>

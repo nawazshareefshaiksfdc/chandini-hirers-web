@@ -34,7 +34,7 @@ export default function QtyStepper({ value, onAdd, onRemove, onSet, onClear }: P
 
   return (
     <div className="flex items-center" suppressHydrationWarning>
-      <button className="p-1 rounded-md border" onClick={onRemove} disabled={disableMinus} aria-label="Decrease" type="button">
+      <button className="py-1 px-2 rounded-md border" onClick={onRemove} disabled={disableMinus} aria-label="Decrease" type="button">
         -
       </button>
 
@@ -56,25 +56,9 @@ export default function QtyStepper({ value, onAdd, onRemove, onSet, onClear }: P
         suppressHydrationWarning
       />
 
-      <button className="p-1 rounded-md border" onClick={onAdd} aria-label="Increase" type="button">
+      <button className="py-1 px-2 rounded-md border" onClick={onAdd} aria-label="Increase" type="button">
         +
       </button>
-
-      {onClear && (
-        <button
-          className="ml-1 p-1 rounded-md border"
-          onClick={() => {
-            setText("0");
-            onSet(0);
-            onClear();
-            inputRef.current?.blur();
-          }}
-          aria-label="Clear"
-          type="button"
-        >
-          ×
-        </button>
-      )}
     </div>
   );
 }

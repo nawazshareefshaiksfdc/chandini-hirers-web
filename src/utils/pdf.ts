@@ -1,28 +1,85 @@
+// src/utils/pdf.ts
 import { jsPDF, type TextOptionsLight } from "jspdf";
 import type { Item } from "@/types";
 
+/* ============================================================
+   Types
+============================================================ */
 export type Line = { item: Item; qty: number; lineTotal: number };
-
-let fontsReady = false;
-let fontsOk = false;
-let fontsPromise: Promise<void> | null = null;
-let dejavuRegB64: string | null = null;
-let dejavuBoldB64: string | null = null;
 
 type NavigatorWithMsSave = Navigator & {
   msSaveOrOpenBlob?: (blob: Blob, defaultName?: string) => boolean;
 };
 
+type NextDataPartial = {
+  assetPrefix?: string;
+  basePath?: string;
+};
+
+/* ============================================================
+   INR formatting (₹ with font; Rs fallback without)
+============================================================ */
 const INR0 = new Intl.NumberFormat("en-IN", {
   style: "currency",
   currency: "INR",
   maximumFractionDigits: 0,
   currencyDisplay: "symbol",
 });
-function formatINR(amount: number) {
-  return fontsOk ? INR0.format(amount) : "Rs " + Math.round(amount).toLocaleString("en-IN");
+function formatINR(amount: number, fontsOk: boolean) {
+  return fontsOk
+    ? INR0.format(amount) // e.g. ₹3,000
+    : "Rs " + Math.round(amount).toLocaleString("en-IN"); // fallback if fonts fail
 }
 
+/* ============================================================
+   Font loading state
+============================================================ */
+let fontsReady = false;
+let fontsOk = false;
+let fontsPromise: Promise<void> | null = null;
+let dejavuRegB64: string | null = null;
+let dejavuBoldB64: string | null = null;
+
+export const arePdfFontsReady = () => fontsReady;
+export const didPdfFontsLoad = () => fontsOk;
+
+/* ============================================================
+   Resolve asset URLs with basePath / assetPrefix (GH Pages safe)
+============================================================ */
+function getBasePrefix(): string {
+  try {
+    // Next injects __NEXT_DATA__ on the page; read assetPrefix/basePath if present
+    const dRaw: unknown = (globalThis as unknown as { __NEXT_DATA__?: NextDataPartial })?.__NEXT_DATA__;
+    if (dRaw && typeof dRaw === "object") {
+      const d = dRaw as NextDataPartial;
+      if (typeof d.assetPrefix === "string" && d.assetPrefix.length > 0) return d.assetPrefix;
+      if (typeof d.basePath === "string" && d.basePath.length > 0) return d.basePath;
+    }
+  } catch {
+    // ignore
+  }
+  // Optional env (set in CI or locally for static export)
+  const envBase = process.env.NEXT_PUBLIC_BASE_PATH;
+  if (typeof envBase === "string" && envBase.length > 0) return envBase;
+
+  // As a very last resort, look for a <base> tag
+  if (typeof document !== "undefined") {
+    const base = document.querySelector("base")?.getAttribute("href");
+    if (base && base !== "/") return base.replace(/\/$/, "");
+  }
+
+  return ""; // root
+}
+
+function withBase(path: string): string {
+  const prefix = getBasePrefix().replace(/\/$/, ""); // no trailing slash
+  const clean = path.startsWith("/") ? path.slice(1) : path;
+  return prefix ? `${prefix}/${clean}` : `/${clean}`;
+}
+
+/* ============================================================
+   Utilities
+============================================================ */
 async function toBase64(buf: ArrayBuffer) {
   let binary = "";
   const bytes = new Uint8Array(buf);
@@ -33,19 +90,30 @@ async function toBase64(buf: ArrayBuffer) {
   return btoa(binary);
 }
 
+async function fetchAsBase64(url: string) {
+  const res = await fetch(url, { cache: "force-cache" });
+  if (!res.ok) throw new Error(`Fetch failed: ${res.status} ${url}`);
+  const buf = await res.arrayBuffer();
+  return toBase64(buf);
+}
+
+/* ============================================================
+   Font loader (DejaVu Sans regular/bold)
+============================================================ */
 async function _loadFonts() {
   try {
-    const [regRes, boldRes] = await Promise.all([
-      fetch("/fonts/DejaVuSans.ttf"),
-      fetch("/fonts/DejaVuSans-Bold.ttf"),
+    const [regB64, boldB64] = await Promise.all([
+      fetchAsBase64(withBase("fonts/DejaVuSans.ttf")),
+      fetchAsBase64(withBase("fonts/DejaVuSans-Bold.ttf")),
     ]);
-    if (!regRes.ok || !boldRes.ok) throw new Error("Font fetch failed");
-    const [regBuf, boldBuf] = await Promise.all([regRes.arrayBuffer(), boldRes.arrayBuffer()]);
-    dejavuRegB64 = await toBase64(regBuf);
-    dejavuBoldB64 = await toBase64(boldBuf);
+
+    dejavuRegB64 = regB64;
+    dejavuBoldB64 = boldB64;
     fontsOk = true;
   } catch (e) {
-    console.warn("[pdf] Font load failed; using Rs- fallback formatting.", e);
+    // Keep running with fallback formatting
+    // eslint-disable-next-line no-console
+    console.warn("[pdf] Font load failed; using Rs fallback formatting.", e);
     fontsOk = false;
   } finally {
     fontsReady = true;
@@ -57,8 +125,6 @@ export function preloadPdfFonts(): Promise<boolean> {
   if (!fontsPromise) fontsPromise = _loadFonts();
   return fontsPromise.then(() => fontsOk);
 }
-export const arePdfFontsReady = () => fontsReady;
-export const didPdfFontsLoad = () => fontsOk;
 
 async function ensureFonts(doc: jsPDF) {
   if (!fontsReady) {
@@ -73,13 +139,16 @@ async function ensureFonts(doc: jsPDF) {
     try {
       doc.setFont("DejaVu", "normal");
     } catch {
-      /* noop */
+      // noop
     }
   } else {
     doc.setFont("helvetica", "normal");
   }
 }
 
+/* ============================================================
+   PDF builder
+============================================================ */
 export async function generateCartPdfBytes(params: {
   title?: string;
   lines: Line[];
@@ -102,7 +171,7 @@ export async function generateCartPdfBytes(params: {
 
   const RIGHT: TextOptionsLight = { align: "right" } as const;
 
-  // Header
+  /* Header */
   doc.setFontSize(16);
   try {
     doc.setFont("DejaVu", "bold");
@@ -120,7 +189,7 @@ export async function generateCartPdfBytes(params: {
   }
   doc.text(`Generated: ${dateStr}`, margin, margin + 30);
 
-  // Table header
+  /* Table header */
   let y = margin + 70;
   doc.setFillColor(240, 240, 240);
   doc.rect(margin, y - 16, pageWidth - margin * 2, 24, "F");
@@ -140,10 +209,11 @@ export async function generateCartPdfBytes(params: {
   }
   y += rowH;
 
+  /* Page break helper */
   const addPageIfNeeded = () => {
     if (y > pageHeight - margin - 60) {
       doc.addPage();
-      // re-header
+
       doc.setFontSize(16);
       try {
         doc.setFont("DejaVu", "bold");
@@ -151,6 +221,7 @@ export async function generateCartPdfBytes(params: {
         doc.setFont("helvetica", "bold");
       }
       doc.text(title, margin, margin + 10);
+
       doc.setFontSize(11);
       try {
         doc.setFont("DejaVu", "normal");
@@ -162,6 +233,7 @@ export async function generateCartPdfBytes(params: {
       const yy = margin + 50;
       doc.setFillColor(240, 240, 240);
       doc.rect(margin, yy - 16, pageWidth - margin * 2, 24, "F");
+
       try {
         doc.setFont("DejaVu", "bold");
       } catch {
@@ -180,11 +252,11 @@ export async function generateCartPdfBytes(params: {
     }
   };
 
-  // Rows
+  /* Rows */
   for (const l of lines) {
     addPageIfNeeded();
-    const priceStr = formatINR(l.item.price);
-    const amountStr = formatINR(l.lineTotal);
+    const priceStr = formatINR(l.item.price, fontsOk);
+    const amountStr = formatINR(l.lineTotal, fontsOk);
 
     doc.text(`${l.item.name} (${priceStr})`, colItemX, y);
     doc.text(String(l.qty), colQtyX, y);
@@ -193,7 +265,7 @@ export async function generateCartPdfBytes(params: {
     y += rowH;
   }
 
-  // Totals
+  /* Totals */
   y += 10;
   doc.setDrawColor(200, 200, 200);
   doc.line(margin, y, pageWidth - margin, y);
@@ -209,11 +281,14 @@ export async function generateCartPdfBytes(params: {
 
   y += rowH;
   doc.text("Total Amount:", pageWidth - 250, y);
-  doc.text(formatINR(totalAmount), colAmtRight, y, RIGHT);
+  doc.text(formatINR(totalAmount, fontsOk), colAmtRight, y, RIGHT);
 
   return doc.output("arraybuffer");
 }
 
+/* ============================================================
+   Robust downloader
+============================================================ */
 export function robustDownloadPdf(bytes: ArrayBuffer, filename: string) {
   try {
     const blob = new Blob([bytes], { type: "application/pdf" });
@@ -226,6 +301,7 @@ export function robustDownloadPdf(bytes: ArrayBuffer, filename: string) {
 
     const url = URL.createObjectURL(blob);
 
+    // iOS/Safari opens in a new tab more reliably
     const isIOS =
       /iP(ad|hone|od)/.test(navigator.platform) ||
       (navigator.userAgent.includes("Mac") && "ontouchend" in document);
@@ -244,6 +320,7 @@ export function robustDownloadPdf(bytes: ArrayBuffer, filename: string) {
       a.remove();
     }, 1000);
   } catch (err: unknown) {
+    // eslint-disable-next-line no-console
     console.error("[pdf] Download failed:", err);
     alert("Could not download the PDF. Try Share or long-press → ‘Download Linked File’.");    
   }
