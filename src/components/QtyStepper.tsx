@@ -25,19 +25,26 @@ export default function QtyStepper({ value, onAdd, onRemove, onSet, onClear }: P
 
   const apply = (raw: string) => {
     const q = clamp(raw);
-    const s = String(q);
-    setText(s);
+    setText(String(q));
     onSet(q);
   };
 
   const disableMinus = value <= 0;
 
   return (
-    <div className="flex items-center" suppressHydrationWarning>
-      <button className="py-1 px-2 rounded-md border" onClick={onRemove} disabled={disableMinus} aria-label="Decrease" type="button">
-        -
+    <div className="flex items-center justify-center gap-2 w-full max-w-full text-sm sm:text-base">
+      {/* - Button */}
+      <button
+        type="button"
+        aria-label="Decrease"
+        disabled={disableMinus}
+        onClick={onRemove}
+        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center text-lg disabled:opacity-30"
+      >
+        −
       </button>
 
+      {/* Qty Box */}
       <input
         ref={inputRef}
         value={text}
@@ -50,13 +57,17 @@ export default function QtyStepper({ value, onAdd, onRemove, onSet, onClear }: P
         pattern="[0-9]*"
         autoComplete="off"
         name="qty"
-        data-1p-ignore
-        data-form-type="other"
-        className="w-14 text-center border rounded-md py-1 mx-2"
+        className="w-14 h-9 sm:h-10 text-center border rounded-md"
         suppressHydrationWarning
       />
 
-      <button className="py-1 px-2 rounded-md border" onClick={onAdd} aria-label="Increase" type="button">
+      {/* + Button */}
+      <button
+        type="button"
+        aria-label="Increase"
+        onClick={onAdd}
+        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center text-lg"
+      >
         +
       </button>
     </div>

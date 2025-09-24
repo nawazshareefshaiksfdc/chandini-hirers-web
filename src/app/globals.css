@@ -17,6 +17,7 @@
     --ink:#e5e7eb;        /* slate-200 */
     --primary:#6366f1;    /* indigo-500 */
     --primary-weak:#1e1b4b;/* indigo-950-ish */
+    --secondary:#00ff25;
   }
 }
 
@@ -26,6 +27,7 @@
   --color-ink: var(--ink);
   --color-primary: var(--primary);
   --color-primary-weak: var(--primary-weak);
+  --color-secondaty:var(--secondary);
 }
 
 html,body{height:100%}

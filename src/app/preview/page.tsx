@@ -203,7 +203,15 @@ Attached: PDF summary.`;
               </li>
             ))}
           </ul>
-
+          {/* Total summary section */}
+          <div className="text-right px-2 sm:px-4 mt-2">
+            <div className="text-sm sm:text-base text-gray-700">
+              Total Items: <span className="font-medium">{cart.totalItems}</span>
+            </div>
+            <div className="text-sm sm:text-base text-gray-700">
+              Total Amount: <span className="font-semibold text-[color:var(--color-primary)]">₹{cart.totalAmount.toFixed(0)}</span>
+            </div>
+          </div>
           {!fontReady && <div className="text-sm text-gray-600">Loading PDF fonts to display ₹ correctly…</div>}
           {fontReady && !fontOk && (
             <div className="text-sm text-red-600">
