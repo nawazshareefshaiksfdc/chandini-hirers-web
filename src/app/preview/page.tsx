@@ -11,6 +11,7 @@ import {
   arePdfFontsReady,
   didPdfFontsLoad,
 } from "@/utils/pdf";
+import { useRouter } from "next/navigation";
 
 type NavigatorWebShare = Navigator & {
   canShare?: (data: ShareData & { files?: File[] }) => boolean;
@@ -18,6 +19,7 @@ type NavigatorWebShare = Navigator & {
 };
 
 export default function PreviewPage() {
+  let router = useRouter();
   const cart = useCart();
 
   // include `cart` in deps to satisfy ESLint rule
@@ -166,16 +168,25 @@ Attached: PDF summary.`;
   return (
     <main className="max-w-5xl mx-auto px-4 pb-28">
       <header className="py-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Preview</h2>
-        <button
-          className="text-sm border rounded-lg px-3 py-1.5 disabled:opacity-50"
-          onClick={handleClearAll}
-          disabled={lines.length === 0}
-          title={lines.length === 0 ? "Nothing to clear" : "Remove all selected items"}
-        >
-          Clear All
-        </button>
-      </header>
+  <div className="flex items-center gap-2">
+    <button
+      onClick={() => router.back()}
+      className="text-sm text-blue-600 hover:underline"
+    >
+      ← Back
+    </button>
+    <h2 className="text-xl font-semibold">Preview</h2>
+  </div>
+  <button
+    className="text-sm border rounded-lg px-3 py-1.5 disabled:opacity-50"
+    onClick={handleClearAll}
+    disabled={lines.length === 0}
+    title={lines.length === 0 ? "Nothing to clear" : "Remove all selected items"}
+  >
+    Clear All
+  </button>
+</header>
+
 
       {/* Items */}
       {lines.length === 0 ? (
