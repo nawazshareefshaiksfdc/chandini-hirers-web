@@ -2,25 +2,27 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Search, Filter } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { kCatalog, ALL_CATEGORIES } from "@/data/catalog";
 import CategorySection from "@/components/CategorySection";
 import FullScreenLoader from "@/components/ui/FullScreenLoader";
-import SocialLinksBar from "@/components/footer/SocialLinksBar";
+
+const socialLinks = [
+  { href: "https://www.instagram.com/chandhinihirers_nellore", label: "Instagram", imgSrc: "/icons/instagram.png", size: 22 },
+  { href: "https://youtube.com/@chandhinihirers_nellore", label: "YouTube", imgSrc: "/icons/youtube.png", size: 22 },
+  { href: "https://maps.app.goo.gl/o3orgsRNWrdUJZh76", label: "Google Maps", imgSrc: "/icons/map-pin.png", size: 22 },
+];
 
 export default function HomePage() {
   const cart = useCart();
 
-  // Loader gate: ready once catalog is synced (we don't block on social images)
   const [ready, setReady] = useState(false);
-
-  // Controls
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
-  // Filtered catalog
   const filteredCatalog = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return kCatalog.filter((item) => {
@@ -31,23 +33,18 @@ export default function HomePage() {
     });
   }, [searchQuery, selectedCategories]);
 
-  // Boot: sync catalog then reveal page (tiny delay prevents loader flash)
   useEffect(() => {
     let cancelled = false;
     cart.syncCatalog(kCatalog);
     const t = setTimeout(() => {
       if (!cancelled) setReady(true);
     }, 150);
-    return () => { cancelled = true; clearTimeout(t); };
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Social links (image icons)
-  const socialLinks = [
-    { href: "https://www.instagram.com/chandhinihirers_nellore/#", label: "Instagram", imgSrc: "./icons/instagram.png", size: 22 },
-    { href: "https://youtube.com/@chandhinihirers_nellore", label: "YouTube", imgSrc: "./icons/youtube.png", size: 22 },
-    { href: "https://maps.app.goo.gl/o3orgsRNWrdUJZh76", label: "Google Maps", imgSrc: "./icons/map-pin.png", size: 22 },
-  ];
 
   return (
     <>
@@ -152,7 +149,7 @@ export default function HomePage() {
           ))}
         </section>
 
-        {/* Fixed Footer: CTA first, Socials after (good hierarchy) */}
+        {/* Fixed Footer */}
         <footer
           className="fixed inset-x-0 bottom-0 bg-white/95 backdrop-blur-md border-t"
           style={{ paddingBottom: "calc(10px + env(safe-area-inset-bottom))" }}
@@ -169,9 +166,29 @@ export default function HomePage() {
               </Link>
             )}
 
-            {/* Socials (image icons) */}
-            <div className="mt-2">
-              <SocialLinksBar links={socialLinks} />
+            {/* Social Icons */}
+            <div className="flex items-center justify-center gap-3 sm:gap-4 pb-2 mt-2">
+              {socialLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={link.label}
+                  title={link.label}
+                  className="inline-flex items-center justify-center rounded-full border shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] transition"
+                  style={{ width: "44px", height: "44px" }}
+                >
+                  <Image
+                    src={link.imgSrc}
+                    alt={link.label}
+                    width={link.size}
+                    height={link.size}
+                    className="pointer-events-none select-none"
+                  />
+                  <span className="sr-only">{link.label}</span>
+                </Link>
+              ))}
             </div>
           </div>
         </footer>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import "./global.css";
 import { CartProvider } from "@/context/CartContext";
 import CatalogBootstrap from "@/components/CatalogBootstrap"; // 👈
 
