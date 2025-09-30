@@ -174,7 +174,7 @@ export default function HomePage() {
                   style={{ width: "44px", height: "44px" }}
                 >
                   <Image
-                    src="/icons/instagram.png"
+                    src="./icons/instagram.png"
                     alt="Instagram"
                     width={22}
                     height={22}
@@ -194,7 +194,7 @@ export default function HomePage() {
                   style={{ width: "44px", height: "44px" }}
                 >
                   <Image
-                    src="/icons/youtube.png"
+                    src="./icons/youtube.png"
                     alt="YouTube"
                     width={22}
                     height={22}
@@ -214,7 +214,7 @@ export default function HomePage() {
                   style={{ width: "44px", height: "44px" }}
                 >
                   <Image
-                    src="/icons/map-pin.png"
+                    src="./icons/map-pin.png"
                     alt="Google Maps"
                     width={22}
                     height={22}
