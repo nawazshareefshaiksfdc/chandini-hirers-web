@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { kCatalog } from "@/data/catalog";
 import {
@@ -11,7 +12,7 @@ import {
   arePdfFontsReady,
   didPdfFontsLoad,
 } from "@/utils/pdf";
-import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react"; // 👈 Add this if not already installed
 
 type NavigatorWebShare = Navigator & {
   canShare?: (data: ShareData & { files?: File[] }) => boolean;
@@ -19,17 +20,15 @@ type NavigatorWebShare = Navigator & {
 };
 
 export default function PreviewPage() {
-  let router = useRouter();
+  const router = useRouter();
   const cart = useCart();
 
-  // include `cart` in deps to satisfy ESLint rule
   useEffect(() => {
     cart.syncCatalog(kCatalog);
-  }, []);
+  }, [cart]); // ✅ included cart
 
   const lines = cart.selectedLines;
 
-  // ---- FONT GATE ----
   const [fontReady, setFontReady] = useState(arePdfFontsReady());
   const [fontOk, setFontOk] = useState(didPdfFontsLoad());
 
@@ -42,7 +41,6 @@ export default function PreviewPage() {
     }
   }, [fontReady]);
 
-  // ---- PDF preview state (on-demand) ----
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showInline, setShowInline] = useState(false);
   const urlRef = useRef<string | null>(null);
@@ -72,7 +70,6 @@ export default function PreviewPage() {
     }
   };
 
-  // Rebuild when data changes, but only if user asked & fonts OK
   const depsKey = useMemo(
     () =>
       JSON.stringify({
@@ -96,7 +93,6 @@ export default function PreviewPage() {
     };
   }, []);
 
-  // ---- Actions ----
   const handleShowInline = async () => {
     setShowInline(true);
     await buildPdfUrl();
@@ -105,7 +101,7 @@ export default function PreviewPage() {
   const handleOpenSameTab = async () => {
     if (!pdfUrl) await buildPdfUrl();
     const url = urlRef.current || pdfUrl;
-    if (url) window.location.assign(url); // same tab → Back returns here
+    if (url) window.location.assign(url);
   };
 
   const handleDownloadPdf = async () => {
@@ -145,8 +141,8 @@ Attached: PDF summary.`;
       try {
         await nav.share?.({ title: "Chandini Hirers Order", text: shareText, files: [file] });
         return;
-      } catch (_err: unknown) {
-        // fall through to download
+      } catch {
+        // fallback to download
       }
     }
     robustDownloadPdf(bytes, filename);
@@ -167,21 +163,23 @@ Attached: PDF summary.`;
 
   return (
     <main className="max-w-5xl mx-auto px-4 pb-28">
-      <header className="py-4 flex items-center justify-between">
-  <div className="flex items-center gap-2">
+<header className="py-4 flex items-center justify-between">
+  <div className="flex items-center gap-3">
     <button
       onClick={() => router.back()}
-      className="text-sm text-blue-600 hover:underline"
+      className="inline-flex items-center px-3 py-1.5 rounded-lg border text-sm font-medium shadow-sm text-[color:var(--color-primary)] border-[color:var(--color-primary)] hover:bg-[color:var(--color-primary)] hover:text-white transition-colors"
     >
-      ← Back
+      <ArrowLeft className="w-4 h-4 mr-1" />
+      Back
     </button>
     <h2 className="text-xl font-semibold">Preview</h2>
   </div>
+
   <button
     className="text-sm border rounded-lg px-3 py-1.5 disabled:opacity-50"
     onClick={handleClearAll}
     disabled={lines.length === 0}
-    title={lines.length === 0 ? "Nothing to clear" : "Remove all selected items"}
+    title={lines.length === 0 ? 'Nothing to clear' : 'Remove all selected items'}
   >
     Clear All
   </button>
