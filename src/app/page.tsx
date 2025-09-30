@@ -9,12 +9,6 @@ import { kCatalog, ALL_CATEGORIES } from "@/data/catalog";
 import CategorySection from "@/components/CategorySection";
 import FullScreenLoader from "@/components/ui/FullScreenLoader";
 
-const socialLinks = [
-  { href: "https://www.instagram.com/chandhinihirers_nellore", label: "Instagram", imgSrc: "/icons/instagram.png", size: 22 },
-  { href: "https://youtube.com/@chandhinihirers_nellore", label: "YouTube", imgSrc: "/icons/youtube.png", size: 22 },
-  { href: "https://maps.app.goo.gl/o3orgsRNWrdUJZh76", label: "Google Maps", imgSrc: "/icons/map-pin.png", size: 22 },
-];
-
 export default function HomePage() {
   const cart = useCart();
 
@@ -168,27 +162,67 @@ export default function HomePage() {
 
             {/* Social Icons */}
             <div className="flex items-center justify-center gap-3 sm:gap-4 pb-2 mt-2">
-              {socialLinks.map((link) => (
+              <div className="flex items-center justify-center gap-3 sm:gap-4 pb-2 mt-2">
+                {/* Instagram */}
                 <Link
-                  key={link.href}
-                  href={link.href}
+                  href="https://www.instagram.com/chandhinihirers_nellore"
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={link.label}
-                  title={link.label}
+                  aria-label="Instagram"
+                  title="Instagram"
                   className="inline-flex items-center justify-center rounded-full border shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] transition"
                   style={{ width: "44px", height: "44px" }}
                 >
                   <Image
-                    src={link.imgSrc}
-                    alt={link.label}
-                    width={link.size}
-                    height={link.size}
+                    src="/icons/instagram.png"
+                    alt="Instagram"
+                    width={22}
+                    height={22}
                     className="pointer-events-none select-none"
                   />
-                  <span className="sr-only">{link.label}</span>
+                  <span className="sr-only">Instagram</span>
                 </Link>
-              ))}
+
+                {/* YouTube */}
+                <Link
+                  href="https://youtube.com/@chandhinihirers_nellore"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="YouTube"
+                  title="YouTube"
+                  className="inline-flex items-center justify-center rounded-full border shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] transition"
+                  style={{ width: "44px", height: "44px" }}
+                >
+                  <Image
+                    src="/icons/youtube.png"
+                    alt="YouTube"
+                    width={22}
+                    height={22}
+                    className="pointer-events-none select-none"
+                  />
+                  <span className="sr-only">YouTube</span>
+                </Link>
+
+                {/* Google Maps */}
+                <Link
+                  href="https://maps.app.goo.gl/o3orgsRNWrdUJZh76"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Google Maps"
+                  title="Google Maps"
+                  className="inline-flex items-center justify-center rounded-full border shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] transition"
+                  style={{ width: "44px", height: "44px" }}
+                >
+                  <Image
+                    src="/icons/map-pin.png"
+                    alt="Google Maps"
+                    width={22}
+                    height={22}
+                    className="pointer-events-none select-none"
+                  />
+                  <span className="sr-only">Google Maps</span>
+                </Link>
+              </div>
             </div>
           </div>
         </footer>
