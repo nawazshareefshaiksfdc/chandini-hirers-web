@@ -5,6 +5,7 @@ export const Categories = {
   pooja: "Pooja Items",
   tents: "Tents & Side Walls",
   cooking: "Cooking Items",
+  stage:"Stage",
 } as const;
 
 export const ALL_CATEGORIES = [
@@ -12,6 +13,7 @@ export const ALL_CATEGORIES = [
   Categories.pooja,
   Categories.tents,
   Categories.cooking,
+  Categories.stage,
 ];
 
 export const kCatalog: Item[] = [
@@ -30,5 +32,10 @@ export const kCatalog: Item[] = [
   // Cooking Items
   { id: "ck1", name: "Large Vessel", imageAsset: "./images/cooking_1.png", price: 900, category: Categories.cooking },
   { id: "ck2", name: "Gas Stove (2 burner)", imageAsset: "./images/gas_stove.png", price: 700, category: Categories.cooking },
+  
+
+  // Stage Items
+  { id: "st1", name: "3*3 2FT", imageAsset: "./images/Stage.png", price: 900, category: Categories.stage },
+  { id: "st2", name: "4*4 1FT", imageAsset: "./images/Stage.png", price: 700, category: Categories.stage },
 ];
 
