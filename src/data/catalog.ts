@@ -33,7 +33,7 @@ export const ALL_CATEGORIES = [
 // ✅ Catalog Data
 export const kCatalog: Item[] = [
   // ─────────────────────────── Shamiyanas ───────────────────────────
-  { id: "sha1", name: "12x9 Shamiyana", imageAssets: ["./images/shamiyana1.jpg","./images/placeholder.jpeg","./images/placeholder.jpeg"], price: 599, category: Categories.shamiyanas },
+  { id: "sha1", name: "12x9 Shamiyana", imageAssets: ["./images/shamiyana1.jpg","./images/placeholder.jpeg","./images/placeholder.jpeg"], previewImage: "/images/placeholder.jpeg", price: 599, category: Categories.shamiyanas },
   { id: "sha2", name: "12x12 Shamiyana", imageAssets: ["./images/shamiyana2.jpg"], price: 599, category: Categories.shamiyanas },
   { id: "sha3", name: "15x12 Shamiyana", imageAssets: ["./images/shamiyana3.jpg"], price: 599, category: Categories.shamiyanas },
   { id: "sha4", name: "18x9 Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 799, category: Categories.shamiyanas },

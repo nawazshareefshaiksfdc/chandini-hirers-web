@@ -196,7 +196,7 @@ Attached: PDF summary.`;
             {lines.map((l) => (
               <li key={l.item.id} className="flex items-center gap-3 p-3">
                 <Image
-                  src={l.item.imageAssets?.[0] || "/images/placeholder.jpeg"}
+                  src={l.item.previewImage || l.item.imageAssets?.[0] || "/images/placeholder.jpeg"}
                   width={48}
                   height={48}
                   alt={l.item.name}

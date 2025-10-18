@@ -1,6 +1,7 @@
 // src/utils/pdf.ts
 import { jsPDF, type TextOptionsLight } from "jspdf";
 import type { Item } from "@/types";
+
 /* ============================================================
    Types
 ============================================================ */
@@ -12,8 +13,9 @@ type NextDataPartial = {
   assetPrefix?: string;
   basePath?: string;
 };
+
 /* ============================================================
-   INR formatting (₹ with font; Rs fallback without)
+   INR formatting
 ============================================================ */
 const INR0 = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -26,6 +28,7 @@ function formatINR(amount: number, fontsOk: boolean) {
     ? INR0.format(amount)
     : "Rs " + Math.round(amount).toLocaleString("en-IN");
 }
+
 /* ============================================================
    Asset loading state (fonts + icons)
 ============================================================ */
@@ -39,10 +42,12 @@ let iconsPromise: Promise<void> | null = null;
 let iconInstagramB64: string | null = null;
 let iconYouTubeB64: string | null = null;
 let iconMapPinB64: string | null = null;
+
 export const arePdfFontsReady = () => fontsReady;
 export const didPdfFontsLoad = () => fontsOk;
+
 /* ============================================================
-   Resolve asset URLs with basePath / assetPrefix (GH Pages safe)
+   Resolve asset URLs
 ============================================================ */
 function getBasePrefix(): string {
   try {
@@ -65,11 +70,13 @@ function getBasePrefix(): string {
   }
   return "";
 }
+
 function withBase(path: string): string {
   const prefix = getBasePrefix().replace(/\/$/, "");
   const clean = path.startsWith("/") ? path.slice(1) : path;
   return prefix ? `${prefix}/${clean}` : `/${clean}`;
 }
+
 /* ============================================================
    Utilities
 ============================================================ */
@@ -82,14 +89,16 @@ async function toBase64(buf: ArrayBuffer) {
   }
   return btoa(binary);
 }
+
 async function fetchAsBase64(url: string) {
   const res = await fetch(url, { cache: "force-cache" });
   if (!res.ok) throw new Error(`Fetch failed: ${res.status} ${url}`);
   const buf = await res.arrayBuffer();
   return toBase64(buf);
 }
+
 /* ============================================================
-   Load fonts (DejaVu Sans regular/bold)
+   Load fonts (DejaVu Sans)
 ============================================================ */
 async function _loadFonts() {
   try {
@@ -107,11 +116,13 @@ async function _loadFonts() {
     fontsReady = true;
   }
 }
+
 export function preloadPdfFonts(): Promise<boolean> {
   if (fontsReady) return Promise.resolve(fontsOk);
   if (!fontsPromise) fontsPromise = _loadFonts();
   return fontsPromise.then(() => fontsOk);
 }
+
 async function ensureFonts(doc: jsPDF) {
   if (!fontsReady) {
     if (!fontsPromise) fontsPromise = _loadFonts();
@@ -129,8 +140,9 @@ async function ensureFonts(doc: jsPDF) {
     doc.setFont("helvetica", "normal");
   }
 }
+
 /* ============================================================
-   Load Lucide-like footer icons (PNG files in /public/icons)
+   Load footer icons
 ============================================================ */
 async function _loadIcons() {
   try {
@@ -143,13 +155,7 @@ async function _loadIcons() {
     iconYouTubeB64 = yt;
     iconMapPinB64 = mp;
   } catch (e) {
-    console.warn(
-      "[pdf] Footer icons failed to load; footer will omit icons.",
-      e
-    );
-    iconInstagramB64 = null;
-    iconYouTubeB64 = null;
-    iconMapPinB64 = null;
+    console.warn("[pdf] Footer icons failed to load; omitting icons.", e);
   } finally {
     iconsReady = true;
   }
@@ -159,27 +165,29 @@ async function ensureIcons() {
   if (!iconsPromise) iconsPromise = _loadIcons();
   await iconsPromise;
 }
+
 /* ============================================================
-   Watermark (denser diagonal tiling)
+   Watermark
 ============================================================ */
 function drawTiledDiagonalWatermark(doc: jsPDF, text: string) {
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
-  // Denser pattern: tighter steps + staggered rows
-  const angle = 45; // diagonal
-  const stepX = 120; // smaller spacing → more watermarks
+  const angle = 45;
+  const stepX = 120;
   const stepY = 80;
-  const size = 9; // slightly bigger than before for visibility
-  const color = 200; // light gray
+  const size = 9;
+  const color = 200;
+
   doc.saveGraphicsState?.();
   doc.setTextColor(color, color, color);
   doc.setFontSize(size);
-  // two passes: one normal grid, one staggered-half step
+
   for (let y = -stepY; y < pageH + stepY; y += stepY) {
     for (let x = -stepX; x < pageW + stepX; x += stepX) {
       doc.text(text, x, y, { angle });
     }
   }
+
   const xOffset = stepX / 2;
   const yOffset = stepY / 2;
   for (let y = -stepY + yOffset; y < pageH + stepY; y += stepY) {
@@ -189,74 +197,47 @@ function drawTiledDiagonalWatermark(doc: jsPDF, text: string) {
   }
   doc.restoreGraphicsState?.();
 }
+
 /* ============================================================
-   Footer: icon buttons (Instagram, YouTube, Maps)
+   Footer icons
 ============================================================ */
 function addFooterIcons(doc: jsPDF) {
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const margin = 40;
-  const centerY = pageH - margin; // vertical baseline
-  const iconSize = 18; // px (points)
+  const centerY = pageH - margin;
+  const iconSize = 18;
   const gap = 18;
-  // Left label
+
   doc.setFontSize(10);
   try {
     doc.setFont("DejaVu", "bold");
   } catch {
     doc.setFont("helvetica", "bold");
   }
-  doc.setTextColor(0, 0, 0);
-  const label = "Connect:";
-  doc.text(label, margin, centerY);
-  let x = margin + doc.getTextWidth(label) + 16;
-  const icons: Array<{ b64: string | null; url: string; alt: string }> = [
-    {
-      b64: iconInstagramB64,
-      url: "https://www.instagram.com/chandhinihirers_nellore/#",
-      alt: "Instagram",
-    },
-    {
-      b64: iconYouTubeB64,
-      url: "https://www.youtube.com/@chandhinihirers_nellore",
-      alt: "YouTube",
-    },
-    {
-      b64: iconMapPinB64,
-      url: "https://maps.app.goo.gl/o3orgsRNWrdUJZh76",
-      alt: "Maps",
-    },
+  doc.text("Connect:", margin, centerY);
+  let x = margin + doc.getTextWidth("Connect:") + 16;
+
+  const icons = [
+    { b64: iconInstagramB64, url: "https://www.instagram.com/chandhinihirers_nellore/", alt: "Instagram" },
+    { b64: iconYouTubeB64, url: "https://www.youtube.com/@chandhinihirers_nellore", alt: "YouTube" },
+    { b64: iconMapPinB64, url: "https://maps.app.goo.gl/o3orgsRNWrdUJZh76", alt: "Maps" },
   ];
+
   icons.forEach((ico) => {
     if (ico.b64) {
-      // draw PNG icon
-      doc.addImage(
-        `data:image/png;base64,${ico.b64}`,
-        "PNG",
-        x,
-        centerY - iconSize + 2,
-        iconSize,
-        iconSize
-      );
-      // make clickable area
+      doc.addImage(`data:image/png;base64,${ico.b64}`, "PNG", x, centerY - iconSize + 2, iconSize, iconSize);
       doc.link(x, centerY - iconSize + 2, iconSize, iconSize, { url: ico.url });
       x += iconSize + gap;
     } else {
-      // fallback tiny text if icon missing
-      doc.setFontSize(10);
-      doc.setTextColor(30, 90, 180);
-      const w = doc.getTextWidth(ico.alt);
       doc.text(ico.alt, x, centerY);
-      doc.link(x, centerY - 8, w, 12, { url: ico.url });
-      x += w + gap;
-      doc.setTextColor(0, 0, 0);
+      x += doc.getTextWidth(ico.alt) + gap;
     }
   });
-  // reset text color just in case
-  doc.setTextColor(0, 0, 0);
 }
+
 /* ============================================================
-   PDF builder
+   PDF Builder
 ============================================================ */
 export async function generateCartPdfBytes(params: {
   title?: string;
@@ -266,17 +247,37 @@ export async function generateCartPdfBytes(params: {
 }) {
   const { title = "Chandini Hirers", lines, totalItems, totalAmount } = params;
   const doc = new jsPDF({ unit: "pt", format: "a4" });
+
   await ensureFonts(doc);
   await ensureIcons();
+
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 40;
-  const rowH = 18;
+  const rowH = 28;
   const colItemX = margin + 10;
   const colQtyX = pageWidth - 180;
   const colAmtRight = pageWidth - margin;
   const RIGHT: TextOptionsLight = { align: "right" } as const;
   const dateStr = new Date().toISOString().slice(0, 16).replace("T", " ");
+
+  const imageCache = new Map<string, string>();
+  async function getItemImageB64(url: string): Promise<string | null> {
+    if (imageCache.has(url)) return imageCache.get(url)!;
+    try {
+      const res = await fetch(url, { cache: "force-cache" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const buf = await res.arrayBuffer();
+      const b64 = await toBase64(buf);
+      const dataUrl = `data:image/jpeg;base64,${b64}`;
+      imageCache.set(url, dataUrl);
+      return dataUrl;
+    } catch (e) {
+      console.warn("[pdf] Failed to load item image:", url, e);
+      return null;
+    }
+  }
+
   const drawHeader = () => {
     // Watermark first (so header sits above)
     drawTiledDiagonalWatermark(doc, "chandini hirers");
@@ -314,48 +315,62 @@ export async function generateCartPdfBytes(params: {
     }
     return thY + rowH;
   };
-  // First page
+
   let y = drawHeader();
-  /* Page break helper */
   const addPageIfNeeded = () => {
     if (y > pageHeight - margin - 100) {
-      // Footer icons before the break
       addFooterIcons(doc);
       doc.addPage();
       y = drawHeader();
     }
   };
-  /* Rows */
+
+  // 🔹 Rows with image thumbnails
   for (const l of lines) {
     addPageIfNeeded();
+
     const priceStr = formatINR(l.item.price, fontsOk);
     const amountStr = formatINR(l.lineTotal, fontsOk);
-    doc.text(`${l.item.name} (${priceStr})`, colItemX, y);
+    const imgUrl = l.item.previewImage || l.item.imageAssets?.[0] || "/images/placeholder.jpeg";
+    const imgY = y - 12;
+    const imgSize = 28;
+
+    if (imgUrl) {
+      try {
+        const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+        const fullUrl = `${baseUrl}${withBase(imgUrl)}`;
+        console.log("[pdf] Fetching image:", fullUrl);
+        const b64 = await getItemImageB64(fullUrl);
+        if (b64) doc.addImage(b64, "JPEG", margin, imgY, imgSize, imgSize);
+      } catch (e) {
+        console.warn("[pdf] Could not add image for", l.item.name, e);
+      }
+    }
+
+    const textX = margin + imgSize + 8;
+    doc.text(`${l.item.name} (${priceStr})`, textX, y);
     doc.text(String(l.qty), colQtyX, y);
     doc.text(amountStr, colAmtRight, y, RIGHT);
-    y += rowH;
+    y += rowH + 10;
   }
+
   /* Totals */
   y += 10;
   doc.setDrawColor(200, 200, 200);
   doc.line(margin, y, pageWidth - margin, y);
   y += 24;
-  try {
-    doc.setFont("DejaVu", "bold");
-  } catch {
-    doc.setFont("helvetica", "bold");
-  }
+  doc.setFont("helvetica", "bold");
   doc.text("Total Items:", pageWidth - 250, y);
   doc.text(String(totalItems), colAmtRight, y, RIGHT);
   y += rowH;
   doc.text("Total Amount:", pageWidth - 250, y);
   doc.text(formatINR(totalAmount, fontsOk), colAmtRight, y, RIGHT);
-  // Footer icons on the last page too
   addFooterIcons(doc);
   return doc.output("arraybuffer");
 }
+
 /* ============================================================
-   Robust downloader
+   Robust Downloader
 ============================================================ */
 export function robustDownloadPdf(bytes: ArrayBuffer, filename: string) {
   try {
@@ -366,7 +381,6 @@ export function robustDownloadPdf(bytes: ArrayBuffer, filename: string) {
       return;
     }
     const url = URL.createObjectURL(blob);
-    // iOS/Safari opens in a new tab more reliably
     const isIOS =
       /iP(ad|hone|od)/.test(navigator.platform) ||
       (navigator.userAgent.includes("Mac") && "ontouchend" in document);
@@ -383,8 +397,6 @@ export function robustDownloadPdf(bytes: ArrayBuffer, filename: string) {
     }, 1000);
   } catch (err: unknown) {
     console.error("[pdf] Download failed:", err);
-    alert(
-      "Could not download the PDF. Try Share or long-press → ‘Download Linked File’."
-    );
+    alert("Could not download the PDF. Try again or use ‘Download Linked File’.");
   }
 }

@@ -57,7 +57,9 @@ export default function ItemCard({ item }: { item: Item }) {
 
       {/* Item Info */}
       <div className="mt-4 text-center">
-        <div className="font-semibold text-sm sm:text-base truncate">{item.name}</div>
+        <div className="font-semibold text-sm sm:text-base line-clamp-2 min-h-[40px]">
+          {item.name}
+        </div>
         <div className="text-sm text-[color:var(--secondary)] mt-1">
           ₹{item.price.toFixed(0)}
         </div>
