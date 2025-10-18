@@ -20,7 +20,7 @@ type CartCtx = {
   setQty: (item: Item, qty: number) => void;
   increment: (item: Item) => void;
   decrement: (item: Item) => void;
-  clear: () => void;
+  clear: () => void; // ✅ already here
   clearItem: (item: Item) => void;
   totalItems: number;
   totalAmount: number;
@@ -33,36 +33,31 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [itemsById, setItemsById] = useState<Record<string, Item>>({});
 
-  // load/save quantities
+  // Load from localStorage
   useEffect(() => {
     try {
       const raw = localStorage.getItem("cart-q");
       if (raw) setQuantities(JSON.parse(raw));
     } catch {}
   }, []);
+
+  // Save to localStorage
   useEffect(() => {
     try {
       localStorage.setItem("cart-q", JSON.stringify(quantities));
     } catch {}
   }, [quantities]);
 
-  // Stable, guarded syncCatalog (prevents render loops)
+  // Sync catalog safely
   const syncCatalog = useCallback((catalog: Item[]) => {
     setItemsById((prev) => {
       const next: Record<string, Item> = {};
       for (const it of catalog) next[it.id] = it;
-
-      // shallow-equality: same keys and refs -> no update
       const prevKeys = Object.keys(prev);
       const nextKeys = Object.keys(next);
       if (prevKeys.length === nextKeys.length) {
         let same = true;
-        for (const k of nextKeys) {
-          if (prev[k] !== next[k]) {
-            same = false;
-            break;
-          }
-        }
+        for (const k of nextKeys) if (prev[k] !== next[k]) same = false;
         if (same) return prev;
       }
       return next;
@@ -77,22 +72,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setQuantities((prev) => ({ ...prev, [item.id]: q }));
   };
 
-  const increment = (item: Item) => {
-    setQuantities((prev) => {
-      const current = prev[item.id] ?? 0;
-      return { ...prev, [item.id]: current <= 0 ? 1 : current + 1 };
-    });
-  };
+  const increment = (item: Item) =>
+    setQuantities((prev) => ({
+      ...prev,
+      [item.id]: (prev[item.id] ?? 0) + 1,
+    }));
 
-  const decrement = (item: Item) => {
+  const decrement = (item: Item) =>
     setQuantities((prev) => {
       const current = prev[item.id] ?? 0;
       if (current <= 0) return prev;
       return { ...prev, [item.id]: current - 1 };
     });
-  };
 
-  const clear = () => setQuantities({});
+  const clear = () => setQuantities({}); // ✅ clears all
   const clearItem = (item: Item) =>
     setQuantities((prev) => ({ ...prev, [item.id]: 0 }));
 

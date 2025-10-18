@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Search, Filter } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { kCatalog, ALL_CATEGORIES } from "@/data/catalog";
@@ -24,7 +23,8 @@ export default function HomePage() {
     return kCatalog.filter((item) => {
       const matchesSearch = item.name.toLowerCase().includes(q);
       const matchesCategory =
-        selectedCategories.length === 0 || selectedCategories.includes(item.category);
+        selectedCategories.length === 0 ||
+        selectedCategories.includes(item.category);
       return matchesSearch && matchesCategory;
     });
   }, [searchQuery, selectedCategories]);
@@ -42,6 +42,14 @@ export default function HomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ✅ Clear all items in cart
+  const handleClearAll = () => {
+    if (cart.totalItems === 0) return;
+    if (confirm("Are you sure you want to remove all items from your cart?")) {
+      cart.clear();
+    }
+  };
+
   return (
     <>
       <FullScreenLoader show={!ready} message="Loading Chandini Hirers…" />
@@ -53,21 +61,31 @@ export default function HomePage() {
       >
         <header className="mt-3 py-4 px-4 rounded-2xl bg-[color:var(--color-card)] border shadow-sm flex items-center justify-between flex-wrap gap-2">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Chandini Hirers</h1>
-            <p className="text-sm opacity-80">Event rentals • Chairs • Tents • Cooking</p>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+              Chandini Hirers
+            </h1>
+            <p className="text-sm opacity-80">
+              Event rentals • Chairs • Tents • Cooking
+            </p>
           </div>
 
           <Link
             href="/preview"
-            className="relative inline-flex items-center gap-2 rounded-full px-4 py-2 border shadow-sm bg-white/80 hover:bg-white transition text-sm sm:text-base"
+            className="relative inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 bg-gradient-to-r from-[color:var(--color-primary)] to-indigo-500 text-white font-medium shadow-md hover:shadow-lg hover:brightness-110 transition-all duration-200 text-sm sm:text-base"
           >
-            <span className="font-medium">My Cart</span>
-            <span className="text-xs bg-[color:var(--color-primary)] text-white rounded-full px-2 py-0.5">
+            <span className="font-semibold">🛒 My Cart</span>
+
+            {/* Item Count Badge */}
+            <span className="min-w-[22px] h-[22px] flex items-center justify-center text-xs font-semibold bg-white text-[color:var(--color-primary)] rounded-full px-1">
               {cart.totalItems}
             </span>
-            <span className="text-sm font-semibold text-[color:var(--color-primary)]">
-              ₹{cart.totalAmount.toFixed(0)}
-            </span>
+
+            {/* Total Price */}
+            {cart.totalItems > 0 && (
+              <span className="ml-1 text-sm font-semibold text-white/90">
+                ₹{cart.totalAmount.toFixed(0)}
+              </span>
+            )}
           </Link>
         </header>
 
@@ -85,57 +103,75 @@ export default function HomePage() {
               aria-label="Search items"
             />
           </div>
-
-          {/* Filter Button */}
-          <div className="relative">
-            <button
-              type="button"
-              className="px-4 py-2 rounded-xl border bg-white shadow-sm hover:bg-gray-100 flex items-center gap-2 whitespace-nowrap"
-              onClick={() => setShowFilterDropdown((prev) => !prev)}
-              aria-haspopup="menu"
-              aria-expanded={showFilterDropdown}
-              aria-controls="filter-dropdown"
-            >
-              <Filter className="w-5 h-5" />
-              Filter
-            </button>
-
-            {/* Dropdown Panel */}
-            {showFilterDropdown && (
-              <div
-                id="filter-dropdown"
-                role="menu"
-                className="absolute right-0 z-50 mt-2 w-60 bg-white border rounded-xl shadow-lg p-4 space-y-2"
+          
+          {/* Filter + Clear All */}
+          <div className="relative flex items-center gap-3 sm:gap-4 justify-end">
+            <div className="relative">
+              <button
+                type="button"
+                className="px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 flex items-center gap-2 transition shadow-sm hover:shadow-md"
+                onClick={() => setShowFilterDropdown((prev) => !prev)}
               >
-                <div className="text-sm font-medium text-gray-700 mb-1">Filter by Category</div>
-                {ALL_CATEGORIES.map((cat) => {
-                  const checked = selectedCategories.includes(cat);
-                  return (
-                    <label key={cat} className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() =>
-                          setSelectedCategories((prev) =>
-                            checked ? prev.filter((c) => c !== cat) : [...prev, cat]
-                          )
-                        }
-                        className="accent-[color:var(--color-primary)]"
-                        aria-checked={checked}
-                      />
-                      {cat}
-                    </label>
-                  );
-                })}
-                <button
-                  onClick={() => setSelectedCategories([])}
-                  className="text-sm text-blue-600 hover:underline mt-2"
+                <Filter className="w-5 h-5" />
+                Filter
+              </button>
+
+              {showFilterDropdown && (
+                <div
+                  id="filter-dropdown"
+                  role="menu"
+                  className="absolute left-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg ring-1 ring-gray-200 p-4 space-y-3 z-50"
                 >
-                  Clear Filters
-                </button>
-              </div>
-            )}
+                  <div className="text-sm font-medium text-gray-700 mb-1">
+                    Filter by Category
+                  </div>
+                  {ALL_CATEGORIES.map((cat) => {
+                    const checked = selectedCategories.includes(cat);
+                    return (
+                      <label
+                        key={cat}
+                        className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1.5 rounded-md cursor-pointer transition"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() =>
+                            setSelectedCategories((prev) =>
+                              checked
+                                ? prev.filter((c) => c !== cat)
+                                : [...prev, cat]
+                            )
+                          }
+                          className="accent-[color:var(--color-primary)]"
+                        />
+                        {cat}
+                      </label>
+                    );
+                  })}
+                  <button
+                    onClick={() => setSelectedCategories([])}
+                    className="text-sm text-[color:var(--color-primary)] hover:underline mt-2"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <button
+              className="px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 flex items-center gap-2 transition shadow-sm hover:shadow-md disabled:opacity-50"
+              onClick={handleClearAll}
+              disabled={cart.totalItems === 0}
+              title={
+                cart.totalItems === 0
+                  ? 'Nothing to clear'
+                  : 'Remove all selected items'
+              }
+            >
+              Clear All
+            </button>
           </div>
+
         </div>
 
         {/* Catalog */}
@@ -151,14 +187,13 @@ export default function HomePage() {
           style={{ paddingBottom: "calc(10px + env(safe-area-inset-bottom))" }}
         >
           <div className="max-w-6xl mx-auto px-4 pt-2">
-            {/* CTA */}
-            {cart?.totalItems > 0 && (
+            {cart.totalItems > 0 && (
               <Link
                 href="/preview"
                 className="block w-full text-center rounded-xl bg-[color:var(--color-primary)] hover:brightness-110 text-white py-3 shadow text-sm sm:text-base"
-                aria-label={`View cart and order. Items ${cart.totalItems}, total ₹${(cart.totalAmount ?? 0).toFixed(0)}`}
               >
-                View cart & order • {cart.totalItems} | ₹{(cart.totalAmount ?? 0).toFixed(0)}
+                View cart & order • {cart.totalItems} | ₹
+                {cart.totalAmount.toFixed(0)}
               </Link>
             )}
 
