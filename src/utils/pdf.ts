@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/utils/pdf.ts
 import { jsPDF, type TextOptionsLight } from "jspdf";
 import type { Item } from "@/types";
