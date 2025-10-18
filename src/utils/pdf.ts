@@ -110,7 +110,9 @@ async function _loadFonts() {
     dejavuBoldB64 = boldB64;
     fontsOk = true;
   } catch (e) {
-    console.warn("[pdf] Font load failed; using Rs fallback formatting.", e);
+    if (process.env.NODE_ENV !== "production") {
+      console.log("[pdf-dev] Font load failed; using Rs fallback formatting.");
+    }
     fontsOk = false;
   } finally {
     fontsReady = true;
@@ -154,8 +156,8 @@ async function _loadIcons() {
     iconInstagramB64 = ig;
     iconYouTubeB64 = yt;
     iconMapPinB64 = mp;
-  } catch (e) {
-    console.warn("[pdf] Footer icons failed to load; omitting icons.", e);
+  } catch {
+    // Silently ignore for passengers (users)
   } finally {
     iconsReady = true;
   }
@@ -187,14 +189,6 @@ function drawTiledDiagonalWatermark(doc: jsPDF, text: string) {
       doc.text(text, x, y, { angle });
     }
   }
-
-  const xOffset = stepX / 2;
-  const yOffset = stepY / 2;
-  for (let y = -stepY + yOffset; y < pageH + stepY; y += stepY) {
-    for (let x = -stepX + xOffset; x < pageW + stepX; x += stepX) {
-      doc.text(text, x, y, { angle });
-    }
-  }
   doc.restoreGraphicsState?.();
 }
 
@@ -219,9 +213,9 @@ function addFooterIcons(doc: jsPDF) {
   let x = margin + doc.getTextWidth("Connect:") + 16;
 
   const icons = [
-    { b64: iconInstagramB64, url: "https://www.instagram.com/chandhinihirers_nellore/", alt: "Instagram" },
-    { b64: iconYouTubeB64, url: "https://www.youtube.com/@chandhinihirers_nellore", alt: "YouTube" },
-    { b64: iconMapPinB64, url: "https://maps.app.goo.gl/o3orgsRNWrdUJZh76", alt: "Maps" },
+    { b64: iconInstagramB64, url: "https://www.instagram.com/chandhinihirers_nellore/" },
+    { b64: iconYouTubeB64, url: "https://www.youtube.com/@chandhinihirers_nellore" },
+    { b64: iconMapPinB64, url: "https://maps.app.goo.gl/o3orgsRNWrdUJZh76" },
   ];
 
   icons.forEach((ico) => {
@@ -229,9 +223,6 @@ function addFooterIcons(doc: jsPDF) {
       doc.addImage(`data:image/png;base64,${ico.b64}`, "PNG", x, centerY - iconSize + 2, iconSize, iconSize);
       doc.link(x, centerY - iconSize + 2, iconSize, iconSize, { url: ico.url });
       x += iconSize + gap;
-    } else {
-      doc.text(ico.alt, x, centerY);
-      x += doc.getTextWidth(ico.alt) + gap;
     }
   });
 }
@@ -239,13 +230,17 @@ function addFooterIcons(doc: jsPDF) {
 /* ============================================================
    PDF Builder
 ============================================================ */
-export async function generateCartPdfBytes(params: {
+export async function generateCartPdfBytes({
+  title = "Chandini Hirers",
+  lines,
+  totalItems,
+  totalAmount,
+}: {
   title?: string;
   lines: Line[];
   totalItems: number;
   totalAmount: number;
 }) {
-  const { title = "Chandini Hirers", lines, totalItems, totalAmount } = params;
   const doc = new jsPDF({ unit: "pt", format: "a4" });
 
   await ensureFonts(doc);
@@ -272,16 +267,13 @@ export async function generateCartPdfBytes(params: {
       const dataUrl = `data:image/jpeg;base64,${b64}`;
       imageCache.set(url, dataUrl);
       return dataUrl;
-    } catch (e) {
-      console.warn("[pdf] Failed to load item image:", url, e);
+    } catch {
       return null;
     }
   }
 
   const drawHeader = () => {
-    // Watermark first (so header sits above)
     drawTiledDiagonalWatermark(doc, "chandini hirers");
-    // Header
     doc.setFontSize(16);
     try {
       doc.setFont("DejaVu", "bold");
@@ -290,44 +282,24 @@ export async function generateCartPdfBytes(params: {
     }
     doc.text(title, margin, margin + 10);
     doc.setFontSize(11);
-    try {
-      doc.setFont("DejaVu", "normal");
-    } catch {
-      doc.setFont("helvetica", "normal");
-    }
     doc.text(`Generated: ${dateStr}`, margin, margin + 30);
-    // Table header
     const thY = margin + 70;
     doc.setFillColor(240, 240, 240);
     doc.rect(margin, thY - 16, pageWidth - margin * 2, 24, "F");
-    try {
-      doc.setFont("DejaVu", "bold");
-    } catch {
-      doc.setFont("helvetica", "bold");
-    }
     doc.text("Item", colItemX, thY);
     doc.text("Qty", colQtyX, thY);
     doc.text("Amount", colAmtRight, thY, RIGHT);
-    try {
-      doc.setFont("DejaVu", "normal");
-    } catch {
-      doc.setFont("helvetica", "normal");
-    }
     return thY + rowH;
   };
 
   let y = drawHeader();
-  const addPageIfNeeded = () => {
+
+  for (const l of lines) {
     if (y > pageHeight - margin - 100) {
       addFooterIcons(doc);
       doc.addPage();
       y = drawHeader();
     }
-  };
-
-  // 🔹 Rows with image thumbnails
-  for (const l of lines) {
-    addPageIfNeeded();
 
     const priceStr = formatINR(l.item.price, fontsOk);
     const amountStr = formatINR(l.lineTotal, fontsOk);
@@ -339,12 +311,9 @@ export async function generateCartPdfBytes(params: {
       try {
         const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
         const fullUrl = `${baseUrl}${withBase(imgUrl)}`;
-        console.log("[pdf] Fetching image:", fullUrl);
         const b64 = await getItemImageB64(fullUrl);
         if (b64) doc.addImage(b64, "JPEG", margin, imgY, imgSize, imgSize);
-      } catch (e) {
-        console.warn("[pdf] Could not add image for", l.item.name, e);
-      }
+      } catch {}
     }
 
     const textX = margin + imgSize + 8;
@@ -354,17 +323,26 @@ export async function generateCartPdfBytes(params: {
     y += rowH + 10;
   }
 
-  /* Totals */
+  /* Totals (₹ everywhere, silent fallback) */
   y += 10;
   doc.setDrawColor(200, 200, 200);
   doc.line(margin, y, pageWidth - margin, y);
   y += 24;
-  doc.setFont("helvetica", "bold");
+  try {
+    doc.setFont("DejaVu", "bold");
+  } catch {
+    doc.setFont("helvetica", "bold");
+  }
   doc.text("Total Items:", pageWidth - 250, y);
   doc.text(String(totalItems), colAmtRight, y, RIGHT);
   y += rowH;
+
+  const totalText = fontsOk
+    ? INR0.format(totalAmount)
+    : "Rs " + Math.round(totalAmount).toLocaleString("en-IN");
   doc.text("Total Amount:", pageWidth - 250, y);
-  doc.text(formatINR(totalAmount, fontsOk), colAmtRight, y, RIGHT);
+  doc.text(totalText, colAmtRight, y, RIGHT);
+
   addFooterIcons(doc);
   return doc.output("arraybuffer");
 }
@@ -395,8 +373,7 @@ export function robustDownloadPdf(bytes: ArrayBuffer, filename: string) {
       URL.revokeObjectURL(url);
       a.remove();
     }, 1000);
-  } catch (err: unknown) {
-    console.error("[pdf] Download failed:", err);
-    alert("Could not download the PDF. Try again or use ‘Download Linked File’.");
+  } catch {
+    alert("Could not download the PDF. Please try again.");
   }
 }
