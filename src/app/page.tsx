@@ -6,6 +6,8 @@ import Image from "next/image";
 import { Search, Filter } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { kCatalog, ALL_CATEGORIES } from "@/data/catalog";
+import SocialIcon from "@/components/SocialIcon";
+import { socialLinks } from "@/data/socialLinks";
 import CategorySection from "@/components/CategorySection";
 import FullScreenLoader from "@/components/ui/FullScreenLoader";
 
@@ -162,67 +164,9 @@ export default function HomePage() {
 
             {/* Social Icons */}
             <div className="flex items-center justify-center gap-3 sm:gap-4 pb-2 mt-2">
-              <div className="flex items-center justify-center gap-3 sm:gap-4 pb-2 mt-2">
-                {/* Instagram */}
-                <Link
-                  href="https://www.instagram.com/chandhinihirers_nellore"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Instagram"
-                  title="Instagram"
-                  className="inline-flex items-center justify-center rounded-full border shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] transition"
-                  style={{ width: "44px", height: "44px" }}
-                >
-                  <Image
-                    src="./icons/instagram.png"
-                    alt="Instagram"
-                    width={22}
-                    height={22}
-                    className="pointer-events-none select-none"
-                  />
-                  <span className="sr-only">Instagram</span>
-                </Link>
-
-                {/* YouTube */}
-                <Link
-                  href="https://youtube.com/@chandhinihirers_nellore"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="YouTube"
-                  title="YouTube"
-                  className="inline-flex items-center justify-center rounded-full border shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] transition"
-                  style={{ width: "44px", height: "44px" }}
-                >
-                  <Image
-                    src="./icons/youtube.png"
-                    alt="YouTube"
-                    width={22}
-                    height={22}
-                    className="pointer-events-none select-none"
-                  />
-                  <span className="sr-only">YouTube</span>
-                </Link>
-
-                {/* Google Maps */}
-                <Link
-                  href="https://maps.app.goo.gl/o3orgsRNWrdUJZh76"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Google Maps"
-                  title="Google Maps"
-                  className="inline-flex items-center justify-center rounded-full border shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] transition"
-                  style={{ width: "44px", height: "44px" }}
-                >
-                  <Image
-                    src="./icons/map-pin.png"
-                    alt="Google Maps"
-                    width={22}
-                    height={22}
-                    className="pointer-events-none select-none"
-                  />
-                  <span className="sr-only">Google Maps</span>
-                </Link>
-              </div>
+              {socialLinks.map((icon, index) => (
+                <SocialIcon key={index} {...icon} />
+              ))}
             </div>
           </div>
         </footer>
