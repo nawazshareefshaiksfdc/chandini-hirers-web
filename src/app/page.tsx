@@ -52,7 +52,7 @@ export default function HomePage() {
 
   return (
     <>
-      <FullScreenLoader show={!ready} message="Loading Chandini Hirers…" />
+      <FullScreenLoader show={!ready} dim={0.25} block={false} />
 
       <main
         className="max-w-6xl mx-auto px-2 sm:px-4 pb-44 sm:pb-32"

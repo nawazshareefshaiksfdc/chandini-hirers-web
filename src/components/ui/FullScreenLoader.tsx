@@ -1,43 +1,50 @@
 "use client";
 
-import React from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 type Props = {
-  show?: boolean;            // control externally; if omitted, always show
-  message?: string;          // optional message under the spinner
-  spinnerSize?: number;      // px
-  dimClassName?: string;     // override backdrop styles if needed
+  show: boolean;
+  /** Let clicks pass through the overlay (keep page usable) */
+  block?: boolean;
+  /** Overlay darkness: 0 = transparent, 1 = black */
+  dim?: number;
 };
 
 export default function FullScreenLoader({
-  show = true,
-  message,
-  spinnerSize = 48,
-  dimClassName = "bg-white",
+  show,
+  block = false,
+  dim = 0.25,
 }: Props) {
-  if (!show) return null;
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!show || !mounted) return null;
+
+  const overlay = (
     <div
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center ${dimClassName}`}
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-      role="status"
-      aria-live="polite"
-      aria-label={message ?? "Loading…"}
+      className={[
+        "fixed inset-0 z-[99999] flex items-center justify-center", // very top, centered
+        block ? "pointer-events-auto" : "pointer-events-none",
+      ].join(" ")}
+      style={{ backgroundColor: `rgba(0,0,0,${dim})` }}
+      aria-hidden="true"
     >
-      <div
-        className="animate-spin rounded-full border-4 border-gray-200"
-        style={{
-          width: spinnerSize,
-          height: spinnerSize,
-          borderTopColor: "var(--color-primary, #2563EB)",
-        }}
-      />
-      {message ? (
-        <div className="mt-3 text-sm text-gray-600" aria-hidden="true">
-          {message}
+      <div className="pointer-events-none">
+        <div className="flex items-end gap-[6px]">
+          {["#4c86f9", "#49a84c", "#f6bb02", "#f6bb02", "#2196f3"].map((c, i) => (
+            <span
+              key={i}
+              className="w-[4px] h-[50px] animate-barscale origin-bottom rounded-[2px]"
+              style={{
+                backgroundColor: c,
+                animationDelay: i === 0 ? "0s" : `${-0.9 + 0.1 * (i - 1)}s`,
+              }}
+            />
+          ))}
         </div>
-      ) : null}
-      <span className="sr-only">{message ?? "Loading"}</span>
+      </div>
     </div>
   );
+
+  return createPortal(overlay, document.body);
 }

@@ -36,3 +36,10 @@ body{
   background: var(--bg);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
 }
+@keyframes barscale {
+  0%, 40%, 100% { transform: scaleY(.05); }
+  20% { transform: scaleY(1); }
+}
+@utility animate-barscale {
+  animation: barscale .9s ease-in-out infinite;
+}

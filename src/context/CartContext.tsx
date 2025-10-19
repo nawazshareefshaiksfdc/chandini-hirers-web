@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, {
@@ -8,9 +9,9 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { Item } from "@/types";
+import type { Item } from "@/types";
 
-type Line = { item: Item; qty: number; lineTotal: number };
+export type Line = { item: Item; qty: number; lineTotal: number };
 
 type CartCtx = {
   quantities: Record<string, number>;
@@ -20,7 +21,7 @@ type CartCtx = {
   setQty: (item: Item, qty: number) => void;
   increment: (item: Item) => void;
   decrement: (item: Item) => void;
-  clear: () => void; // ✅ already here
+  clear: () => void;
   clearItem: (item: Item) => void;
   totalItems: number;
   totalAmount: number;
@@ -29,26 +30,94 @@ type CartCtx = {
 
 const Ctx = createContext<CartCtx | null>(null);
 
+/* ===================== Persistence ===================== */
+export const CART_KEY = "chandini.cart.v3";      // current versioned key
+const LEGACY_KEYS = ["cart-q"];                  // auto-migration sources
+
+function safeParse<T>(raw: string | null, fallback: T): T {
+  try {
+    if (!raw) return fallback;
+    const v = JSON.parse(raw);
+    return (v ?? fallback) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+/** Keep only positive integers. Trim zeros to save space. */
+function normalize(qtyMap: Record<string, unknown>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [id, v] of Object.entries(qtyMap || {})) {
+    const n = typeof v === "number" ? v : Number(v);
+    if (Number.isFinite(n) && n > 0) out[id] = Math.floor(n);
+  }
+  return out;
+}
+
+function loadQuantities(): Record<string, number> {
+  if (typeof window === "undefined") return {};
+  // 1) Try the current key
+  const cur = safeParse<Record<string, unknown>>(localStorage.getItem(CART_KEY), {});
+  const q = normalize(cur);
+  if (Object.keys(q).length > 0) return q;
+
+  // 2) Try legacy keys (migrate once)
+  for (const key of LEGACY_KEYS) {
+    const legacy = safeParse<Record<string, unknown>>(localStorage.getItem(key), {});
+    const n = normalize(legacy);
+    if (Object.keys(n).length > 0) {
+      try {
+        localStorage.setItem(CART_KEY, JSON.stringify(n));
+      } catch { }
+      return n;
+    }
+  }
+  return {};
+}
+
+function saveQuantities(q: Record<string, number>) {
+  try {
+    const compact: Record<string, number> = {};
+    for (const [id, n] of Object.entries(q)) if (n > 0) compact[id] = n;
+    localStorage.setItem(CART_KEY, JSON.stringify(compact));
+  } catch {
+    // ignore quota/security errors
+  }
+}
+
+/* ===================== Provider ===================== */
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [itemsById, setItemsById] = useState<Record<string, Item>>({});
 
-  // Load from localStorage
+  // Load from storage on mount
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("cart-q");
-      if (raw) setQuantities(JSON.parse(raw));
-    } catch {}
+    setQuantities(loadQuantities());
   }, []);
 
-  // Save to localStorage
+  // Save whenever quantities change
   useEffect(() => {
-    try {
-      localStorage.setItem("cart-q", JSON.stringify(quantities));
-    } catch {}
+    saveQuantities(quantities);
   }, [quantities]);
 
-  // Sync catalog safely
+  // Cross-tab sync + back/forward cache refresh
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === CART_KEY) setQuantities(loadQuantities());
+    };
+    const onPageShow = (e: PageTransitionEvent) => {
+      // When returning via bfcache, refresh from storage
+      if ((e as any).persisted) setQuantities(loadQuantities());
+    };
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("pageshow", onPageShow);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("pageshow", onPageShow);
+    };
+  }, []);
+
+  // Keep latest item objects by id (dedup + shallow compare)
   const syncCatalog = useCallback((catalog: Item[]) => {
     setItemsById((prev) => {
       const next: Record<string, Item> = {};
@@ -57,43 +126,67 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const nextKeys = Object.keys(next);
       if (prevKeys.length === nextKeys.length) {
         let same = true;
-        for (const k of nextKeys) if (prev[k] !== next[k]) same = false;
+        for (const k of nextKeys) {
+          if (prev[k] !== next[k]) { same = false; break; }
+        }
         if (same) return prev;
       }
       return next;
     });
   }, []);
 
-  const qtyFor = (item: Item) => quantities[item.id] ?? 0;
-  const visibleQtyFor = (item: Item) => quantities[item.id] ?? 0;
+  const qtyFor = useCallback((item: Item) => quantities[item.id] ?? 0, [quantities]);
+  const visibleQtyFor = qtyFor;
 
-  const setQty = (item: Item, qty: number) => {
-    const q = qty < 0 ? 0 : qty;
-    setQuantities((prev) => ({ ...prev, [item.id]: q }));
-  };
-
-  const increment = (item: Item) =>
-    setQuantities((prev) => ({
-      ...prev,
-      [item.id]: (prev[item.id] ?? 0) + 1,
-    }));
-
-  const decrement = (item: Item) =>
+  const setQty = useCallback((item: Item, qty: number) => {
+    const n = Math.max(0, Math.floor(qty || 0));
     setQuantities((prev) => {
-      const current = prev[item.id] ?? 0;
-      if (current <= 0) return prev;
-      return { ...prev, [item.id]: current - 1 };
+      if (n === 0) {
+        if (!(item.id in prev)) return prev;
+        const next = { ...prev };
+        delete next[item.id];
+        return next;
+      }
+      return { ...prev, [item.id]: n };
     });
+  }, []);
 
-  const clear = () => setQuantities({}); // ✅ clears all
-  const clearItem = (item: Item) =>
-    setQuantities((prev) => ({ ...prev, [item.id]: 0 }));
+  const increment = useCallback((item: Item) => {
+    setQuantities((prev) => ({ ...prev, [item.id]: (prev[item.id] ?? 0) + 1 }));
+  }, []);
+
+  const decrement = useCallback((item: Item) => {
+    setQuantities((prev) => {
+      const cur = prev[item.id] ?? 0;
+      if (cur <= 1) {
+        if (!(item.id in prev)) return prev;
+        const next = { ...prev };
+        delete next[item.id];
+        return next;
+      }
+      return { ...prev, [item.id]: cur - 1 };
+    });
+  }, []);
+
+  const clear = useCallback(() => {
+    setQuantities({});
+  }, []);
+
+  const clearItem = useCallback((item: Item) => {
+    setQuantities((prev) => {
+      if (!(item.id in prev)) return prev;
+      const next = { ...prev };
+      delete next[item.id];
+      return next;
+    });
+  }, []);
+
 
   const { totalItems, totalAmount, selectedLines } = useMemo(() => {
     let items = 0;
     let amount = 0;
     const lines: Line[] = [];
-    Object.entries(quantities).forEach(([id, qty]) => {
+    for (const [id, qty] of Object.entries(quantities)) {
       if (qty > 0) {
         const it = itemsById[id];
         if (it) {
@@ -103,7 +196,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           amount += lineTotal;
         }
       }
-    });
+    }
+    // keep stable order by item name (optional)
+    lines.sort((a, b) => a.item.name.localeCompare(b.item.name));
     return { totalItems: items, totalAmount: amount, selectedLines: lines };
   }, [quantities, itemsById]);
 
