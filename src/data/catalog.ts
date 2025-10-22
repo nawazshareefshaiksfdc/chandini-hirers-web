@@ -82,15 +82,20 @@ export const kCatalog: Item[] = [
   { id: "bs6", name: "White Curtain 30F", imageAssets: ["./images/shamiyana3.jpg"], price: 200, category: Categories.backdropsAndSideWalls },
 
   // ─────────────────────────── Chairs & Sofas ───────────────────────────
-  { id: "cs1", name: "Blue Chair", imageAssets: ["./images/placeholder.jpeg"], price: 5, category: Categories.chairsAndSofas },
-  { id: "cs2", name: "White Chair", imageAssets: ["./images/placeholder.jpeg"], price: 10, category: Categories.chairsAndSofas },
-  { id: "cs3", name: "HL Chair with Cloth", imageAssets: ["./images/placeholder.jpeg"], price: 20, category: Categories.chairsAndSofas },
-  { id: "cs4", name: "Handle Chair with Cloth", imageAssets: ["./images/placeholder.jpeg"], price: 20, category: Categories.chairsAndSofas },
-  { id: "cs5", name: "Steel Sofa", imageAssets: ["./images/placeholder.jpeg"], price: 299, category: Categories.chairsAndSofas },
-  { id: "cs6", name: "Steel Sofa with Cloth", imageAssets: ["./images/placeholder.jpeg"], price: 399, category: Categories.chairsAndSofas },
-  { id: "cs7", name: "Single Raja Chair (1)", imageAssets: ["./images/placeholder.jpeg"], price: 499, category: Categories.chairsAndSofas },
-  { id: "cs8", name: "Double Raja Sofa (1)", imageAssets: ["./images/placeholder.jpeg"], price: 999, category: Categories.chairsAndSofas },
-
+  { id: "cs1", name: "Blue Chair", imageAssets: ["./images/Chairs&Sofas/BlueChair.jpg"], price: 5, category: Categories.chairsAndSofas },
+  { id: "cs2", name: "White Chair", imageAssets: ["./images/Chairs&Sofas/WhiteChair.jpg"], price: 10, category: Categories.chairsAndSofas },
+  { id: "cs3", name: "Handle Chair", imageAssets: ["./images/Chairs&Sofas/HandChair.jpg"], price: 15, category: Categories.chairsAndSofas },
+  { id: "cs3", name: "HL Chair with Cloth", imageAssets: ["./images/Chairs&Sofas/HLChairWIthCLoth.jpeg"], price: 20, category: Categories.chairsAndSofas },
+  { id: "cs4", name: "H Chair with Cloth", imageAssets: ["./images/Chairs&Sofas/HChairWithCloth.jpeg"], price: 25, category: Categories.chairsAndSofas },
+  { id: "cs5", name: "Steel Sofa", imageAssets: ["./images/Chairs&Sofas/StealSofa.png","./images/Chairs&Sofas/StealSofa.jpg"], price: 299, category: Categories.chairsAndSofas },
+  { id: "cs6", name: "Steel Sofa with Cloth", imageAssets: ["./images/Chairs&Sofas/SSSofaWithCloth.jpg"], price: 399, category: Categories.chairsAndSofas },
+  { id: "cs7", name: "Baby Chair", imageAssets: ["./images/Chairs&Sofas/BabyChair.jpg"], price: 299, category: Categories.chairsAndSofas },
+  { id: "cs7", name: "Single Raja Chair (1)", imageAssets: ["./images/Chairs&Sofas/Maharaja1.jpg","./images/Chairs&Sofas/Maharaja2.jpg"], price: 500, category: Categories.chairsAndSofas },
+  { id: "cs7", name: "Single Raja Chair (2)", imageAssets: ["./images/Chairs&Sofas/Maharaja.jpg"], price: 800, category: Categories.chairsAndSofas },
+  { id: "cs7", name: "Single white Raja (3)", imageAssets: ["./images/Chairs&Sofas/SingleRajaChair.jpeg"], price: 1000, category: Categories.chairsAndSofas },
+  { id: "cs8", name: "Double Raja Sofa (1)", imageAssets: ["./images/Chairs&Sofas/Sofa2.jpg"], price: 1000, category: Categories.chairsAndSofas },
+  { id: "cs8", name: "Double Raja Sofa (2)", imageAssets: ["./images/Chairs&Sofas/Sofa.jpg","./images/Chairs&Sofas/Sofa1.jpg"], price: 1500, category: Categories.chairsAndSofas },
+  
   // ─────────────────────────── Tables & Stage ───────────────────────────
   { id: "tss1", name: "Single Stall Set", imageAssets: ["./images/placeholder.jpeg"], price: 399, category: Categories.tablesAndStage },
   { id: "tss2", name: "Double Stall Set", imageAssets: ["./images/placeholder.jpeg"], price: 799, category: Categories.tablesAndStage },
