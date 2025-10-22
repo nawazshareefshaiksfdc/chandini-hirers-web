@@ -54,7 +54,7 @@ export const kCatalog: Item[] = [
   { id: "pan2", name: "15x12 Pandiri", imageAssets: ["./images/Pandiri/pandiri1.png","./images/Pandiri/whiteceiling.jpg"], price: 1399, category: Categories.pandiri },
   { id: "pan3", name: "15x15 Pandiri", imageAssets: ["./images/Pandiri/pandiri4.png","./images/Pandiri/pandiri7.jpg","./images/Pandiri/pandiri5.png,./images/Pandiri/whiteceiling.jpg"], price: 1799, category: Categories.pandiri },
   { id: "pan4", name: "18x12 Pandiri", imageAssets: ["./images/Pandiri/pandiri2.jpg","./images/Pandiri/whiteceiling.jpg"], price: 1799, category: Categories.pandiri },
-  { id: "pan5", name: "18x15 Pandiri", imageAssets: ["./images/Pandiri/pandiri1.png,./images/Pandiri/pandiri2.jpg","./images/Pandiri/pandiri6.jpg,./images/Pandiri/whiteceiling.jpg"], price: 1999, category: Categories.pandiri },
+  { id: "pan5", name: "18x15 Pandiri", imageAssets: ["./images/Pandiri/pandiri1.png","./images/Pandiri/pandiri2.jpg","./images/Pandiri/pandiri6.jpg","./images/Pandiri/whiteceiling.jpg"], price: 1999, category: Categories.pandiri },
   { id: "pan6", name: "18x18 Pandiri", imageAssets: ["./images/Pandiri/pandiri8.jpg","./images/Pandiri/whiteceiling.jpg"], price: 2499, category: Categories.pandiri },
   { id: "pan7", name: "12x12 Waterproof Pandiri", imageAssets: ["./images/Pandiri/whiteceiling.jpg"], price: 2499, category: Categories.pandiri },
   { id: "pan8", name: "15x12 Waterproof Pandiri", imageAssets: ["./images/Pandiri/pandiri1.png","./images/Pandiri/whiteceiling.jpg"], price: 2999, category: Categories.pandiri },
