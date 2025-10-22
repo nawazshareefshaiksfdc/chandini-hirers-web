@@ -64,14 +64,14 @@ export const kCatalog: Item[] = [
   { id: "pan12", name: "18x18 Waterproof Pandiri", imageAssets: ["./images/shamiyana3.jpg"], price: 4999, category: Categories.pandiri },
 
   // ─────────────────────────── Pooja Items ───────────────────────────
-  { id: "pi1", name: "Wood Mandapam", imageAssets: ["./images/PoojaItems/WoodMandapam"], price: 500, category: Categories.poojaItems },
-  { id: "pi2", name: "Metal Mandapam", imageAssets: ["./images/PoojaItems/MetalMandapam"], price: 799, category: Categories.poojaItems },
-  { id: "pi3", name: "Homam", imageAssets: ["./images/PoojaItems/Homam"], price: 200, category: Categories.poojaItems },
-  { id: "pi4", name: "Peeta", imageAssets: ["./images/PoojaItems/Peeta"], price: 50, category: Categories.poojaItems },
-  { id: "pi5", name: "1F Kundena", imageAssets: ["./images/PoojaItems/Kundena"], price: 50, category: Categories.poojaItems },
-  { id: "pi6", name: "1.5F Kundena", imageAssets: ["./images/PoojaItems/Kundena1"], price: 100, category: Categories.poojaItems },
-  { id: "pi7", name: "2F Kundena", imageAssets: ["./images/PoojaItems/Kundena2"], price: 150, category: Categories.poojaItems },
-  { id: "pi8", name: "3.5F Kundena", imageAssets: ["./images/PoojaItems/Kundena3"], price: 300, category: Categories.poojaItems },
+  { id: "pi1", name: "Wood Mandapam", imageAssets: ["./images/PoojaItems/WoodMandapam.jpg"], price: 500, category: Categories.poojaItems },
+  { id: "pi2", name: "Metal Mandapam", imageAssets: ["./images/PoojaItems/MetalMandapam.jpg"], price: 799, category: Categories.poojaItems },
+  { id: "pi3", name: "Homam", imageAssets: ["./images/PoojaItems/Homam.jpg"], price: 200, category: Categories.poojaItems },
+  { id: "pi4", name: "Peeta", imageAssets: ["./images/PoojaItems/Peeta.jpg"], price: 50, category: Categories.poojaItems },
+  { id: "pi5", name: "1F Kundena", imageAssets: ["./images/PoojaItems/Kundena.jpg"], price: 50, category: Categories.poojaItems },
+  { id: "pi6", name: "1.5F Kundena", imageAssets: ["./images/PoojaItems/Kundena1.jpg"], price: 100, category: Categories.poojaItems },
+  { id: "pi7", name: "2F Kundena", imageAssets: ["./images/PoojaItems/Kundena2.jpg"], price: 150, category: Categories.poojaItems },
+  { id: "pi8", name: "3.5F Kundena", imageAssets: ["./images/PoojaItems/Kundena3.jpg"], price: 300, category: Categories.poojaItems },
 
   // ─────────────────────────── Backdrops & Sidewalls ───────────────────────────
   { id: "bs1", name: "Side Curtain 1", imageAssets: ["./images/shamiyana3.jpg"], price: 499, category: Categories.backdropsAndSideWalls },
