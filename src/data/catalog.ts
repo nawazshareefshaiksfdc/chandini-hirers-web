@@ -70,7 +70,7 @@ export const kCatalog: Item[] = [
   { id: "pi4", name: "Peeta", imageAssets: ["./images/PoojaItems/Peeta.jpg"], price: 50, category: Categories.poojaItems },
   { id: "pi5", name: "1F Kundena", imageAssets: ["./images/PoojaItems/Kundena.jpg"], price: 50, category: Categories.poojaItems },
   { id: "pi6", name: "1.5F Kundena", imageAssets: ["./images/PoojaItems/Kundena1.jpg"], price: 100, category: Categories.poojaItems },
-  { id: "pi7", name: "2F Kundena", imageAssets: ["./images/PoojaItems/kundena2.jpg"], price: 150, category: Categories.poojaItems },
+  { id: "pi7", name: "2F Kundena", imageAssets: ["./images/PoojaItems/kundena2.jpeg"], price: 150, category: Categories.poojaItems },
   { id: "pi8", name: "3.5F Kundena", imageAssets: ["./images/PoojaItems/Kundena3.jpg"], price: 300, category: Categories.poojaItems },
 
   // ─────────────────────────── Backdrops & Sidewalls ───────────────────────────
