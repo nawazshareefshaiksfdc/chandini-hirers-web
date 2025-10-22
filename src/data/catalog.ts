@@ -60,7 +60,7 @@ export const kCatalog: Item[] = [
   { id: "pan8", name: "15x12 Waterproof Pandiri", imageAssets: ["./images/Pandiri/pandiri1.png","./images/Pandiri/whiteceiling.jpg"], price: 2999, category: Categories.pandiri },
   { id: "pan9", name: "15x15 Waterproof Pandiri", imageAssets: ["./images/Pandiri/pandiri4.png","./images/Pandiri/whiteceiling.jpg"], price: 3499, category: Categories.pandiri },
   { id: "pan10", name: "18x12 Waterproof Pandiri", imageAssets: ["./images/Pandiri/pandiri2.jpg","./images/Pandiri/whiteceiling.jpg"], price: 3999, category: Categories.pandiri },
-  { id: "pan11", name: "18x15 Waterproof Pandiri", imageAssets: ["./images/Pandiri/pandiri1.png","./images/Pandiri/pandiri2.jpg,./images/Pandiri/whiteceiling.jpg"], price: 4499, category: Categories.pandiri },
+  { id: "pan11", name: "18x15 Waterproof Pandiri", imageAssets: ["./images/Pandiri/pandiri1.png","./images/Pandiri/pandiri2.jpg","./images/Pandiri/whiteceiling.jpg"], price: 4499, category: Categories.pandiri },
   { id: "pan12", name: "18x18 Waterproof Pandiri", imageAssets: ["./images/Pandiri/pandiri8.jpg","./images/Pandiri/whiteceiling.jpg"], price: 4999, category: Categories.pandiri },
 
   // ─────────────────────────── Pooja Items ───────────────────────────
