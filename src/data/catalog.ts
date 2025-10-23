@@ -107,7 +107,7 @@ export const kCatalog: Item[] = [
   // ─────────────────────────── Floor Carpets ───────────────────────────
   { id: "fc1", name: "15x6 Green Mat", imageAssets: ["./images/Floor Carpets/Greenmat.jpg"], price: 250, category: Categories.floorCarpets },
   { id: "fc2", name: "30x6 Green Mat", imageAssets: ["./images/Floor Carpets/Greenmat.jpg"], price: 250, category: Categories.floorCarpets },
-  { id: "fc3", name: "12x6 Jamkanam", imageAssets: ["./images/placeholder.jpeg"], price: 100, category: Categories.floorCarpets },
+  { id: "fc3", name: "12x6 Jamkanam", imageAssets: ["./images/Floor Carpets/Jamkanam.jpg"], price: 100, category: Categories.floorCarpets },
   { id: "fc4", name: "12x9 Tiwachi", imageAssets: ["./images/Floor Carpets/Tiwachi.jpg"], price: 500, category: Categories.floorCarpets },
 
   // ─────────────────────────── Fans & Coolers ───────────────────────────
