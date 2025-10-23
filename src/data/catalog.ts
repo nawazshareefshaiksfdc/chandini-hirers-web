@@ -116,14 +116,14 @@ export const kCatalog: Item[] = [
   { id: "fac3", name: "Jumbo Cooler", imageAssets: ["./images/Fans&Coolers/Jumbo Cooler.jpg"], price: 1500, category: Categories.fansAndCoolers },
 
   // ─────────────────────────── Special Items ───────────────────────────
-  { id: "spi1", name: "Uyyala", imageAssets: ["./images/placeholder.jpeg"], price: 599, category: Categories.specialItems },
-  { id: "spi2", name: "Tea Flask", imageAssets: ["./images/placeholder.jpeg"], price: 100, category: Categories.specialItems },
-  { id: "spi3", name: "Podium", imageAssets: ["./images/placeholder.jpeg"], price: 500, category: Categories.specialItems },
-  { id: "spi4", name: "Wash Basin", imageAssets: ["./images/placeholder.jpeg"], price: 300, category: Categories.specialItems },
-  { id: "spi5", name: "Water Drum", imageAssets: ["./images/placeholder.jpeg"], price: 100, category: Categories.specialItems },
-  { id: "spi6", name: "Dust Bin", imageAssets: ["./images/placeholder.jpeg"], price: 100, category: Categories.specialItems },
-  { id: "spi7", name: "Haldi Set", imageAssets: ["./images/placeholder.jpeg"], price: 2500, category: Categories.specialItems },
-  { id: "spi8", name: "Teapoy", imageAssets: ["./images/placeholder.jpeg"], price: 100, category: Categories.specialItems },
+ { id: "spi1", name: "Uyyala", imageAssets: ["./images/SpecialItems/BabySteelCadle.jpg"], price: 599, category: Categories.specialItems },
+  { id: "spi2", name: "Tea Flask", imageAssets: ["./images/SpecialItems/TeaFlask.jpg"], price: 100, category: Categories.specialItems },
+  { id: "spi3", name: "Podium", imageAssets: ["./images/SpecialItems/Podium.jpg"], price: 500, category: Categories.specialItems },
+  { id: "spi4", name: "Wash Basin", imageAssets: ["./images/SpecialItems/WashBasin.jpg"], price: 300, category: Categories.specialItems },
+  { id: "spi5", name: "Water Drum", imageAssets: ["./images/SpecialItems/WaterDrum.jpg"], price: 100, category: Categories.specialItems },
+  { id: "spi6", name: "Dust Bin", imageAssets: ["./images/SpecialItems/Dustbin.jpg"], price: 100, category: Categories.specialItems },
+  { id: "spi7", name: "Haldi Set", imageAssets: ["./images/SpecialItems/HaldiSet.jpg"], price: 2500, category: Categories.specialItems },
+  { id: "spi8", name: "Teapoy", imageAssets: ["./images/SpecialItems/TeaPoy.jpg"], price: 100, category: Categories.specialItems },
 
   // ─────────────────────────── Lightings ───────────────────────────
   { id: "L1", name: "Lamp", imageAssets: ["./images/placeholder.jpeg"], price: 300, category: Categories.lightings },
