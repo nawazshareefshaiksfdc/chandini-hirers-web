@@ -130,11 +130,18 @@ export const kCatalog: Item[] = [
   { id: "L2", name: "90F Thoranalu", imageAssets: ["./images/Lighting/90F Thoranalu.jpg"], price: 999, category: Categories.lightings },
 
   // ─────────────────────────── Dabarlu/Vessels ───────────────────────────
-  { id: "d1", name: "5kg Dabara", imageAssets: ["./images/placeholder.jpeg"], price: 100, category: Categories.dabarlu },
-  { id: "d2", name: "10kg Dabara", imageAssets: ["./images/placeholder.jpeg"], price: 100, category: Categories.dabarlu },
-  { id: "d3", name: "15kg Dabara", imageAssets: ["./images/placeholder.jpeg"], price: 200, category: Categories.dabarlu },
-  { id: "d4", name: "20kg Dabara", imageAssets: ["./images/placeholder.jpeg"], price: 200, category: Categories.dabarlu },
-  { id: "d5", name: "30kg Dabara", imageAssets: ["./images/placeholder.jpeg"], price: 250, category: Categories.dabarlu },
+  { id: "d1", name: "5kg Dabara", imageAssets: ["./images/DabaraItems/Dabara1.jpg"], price: 100, category: Categories.dabarlu },
+  { id: "d2", name: "10kg Dabara", imageAssets: ["./images/DabaraItems/Dabara2.jpg"], price: 100, category: Categories.dabarlu },
+  { id: "d3", name: "15kg Dabara", imageAssets: ["./images/DabaraItems/Dabara3.jpg"], price: 200, category: Categories.dabarlu },
+  { id: "d4", name: "20kg Dabara", imageAssets: ["./images/DabaraItems/Dabara1.jpg"], price: 200, category: Categories.dabarlu },
+  { id: "d5", name: "30kg Dabara", imageAssets: ["./images/DabaraItems/Dabara2.jpg"], price: 250, category: Categories.dabarlu },
+  { id: "d6", name: "40kg Dabara", imageAssets: ["./images/DabaraItems/Dabara3.jpg"], price: 250, category: Categories.dabarlu },
+  { id: "d7", name: "50kg Dabara", imageAssets: ["./images/DabaraItems/Dabara1.jpg"], price: 250, category: Categories.dabarlu },
+  { id: "d8", name: "60kg Dabara", imageAssets: ["./images/DabaraItems/Dabara2.jpg"], price: 250, category: Categories.dabarlu },
+  { id: "d9", name: "70kg Dabara", imageAssets: ["./images/DabaraItems/Dabara3.jpg"], price: 250, category: Categories.dabarlu },
+  { id: "d10", name: "80kg Dabara", imageAssets: ["./images/DabaraItems/Dabara1.jpg"], price: 250, category: Categories.dabarlu },
+  { id: "d11", name: "90kg Dabara", imageAssets: ["./images/DabaraItems/Dabara2.jpg"], price: 250, category: Categories.dabarlu },
+  { id: "d12", name: "100kg Dabara", imageAssets: ["./images/DabaraItems/Dabara3.jpg"], price: 250, category: Categories.dabarlu },
 
   // ─────────────────────────── Cooking & Serving Items ───────────────────────────
   { id: "csi1", name: "Gangalam", imageAssets: ["./images/placeholder.jpeg"], price: 150, category: Categories.cookingAndServingItems },
