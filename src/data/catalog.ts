@@ -126,8 +126,8 @@ export const kCatalog: Item[] = [
   { id: "spi8", name: "Teapoy", imageAssets: ["./images/SpecialItems/TeaPoy.jpg"], price: 100, category: Categories.specialItems },
 
   // ─────────────────────────── Lightings ───────────────────────────
-  { id: "L1", name: "Lamp", imageAssets: ["./images/placeholder.jpeg"], price: 300, category: Categories.lightings },
-  { id: "L2", name: "90F Thoranalu", imageAssets: ["./images/placeholder.jpeg"], price: 999, category: Categories.lightings },
+ { id: "L1", name: "Lamp", imageAssets: ["./images/Lighting/Lamp.jpg"], price: 300, category: Categories.lightings },
+  { id: "L2", name: "90F Thoranalu", imageAssets: ["./images/Lighting/90F Thoranalu.jpg"], price: 999, category: Categories.lightings },
 
   // ─────────────────────────── Dabarlu/Vessels ───────────────────────────
   { id: "d1", name: "5kg Dabara", imageAssets: ["./images/placeholder.jpeg"], price: 100, category: Categories.dabarlu },
