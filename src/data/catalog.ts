@@ -105,15 +105,15 @@ export const kCatalog: Item[] = [
   { id: "tss6", name: "4x4 3F Stage", imageAssets: ["./images/placeholder.jpeg"], price: 300, category: Categories.tablesAndStage },
 
   // ─────────────────────────── Floor Carpets ───────────────────────────
-  { id: "fc1", name: "15x6 Green Mat", imageAssets: ["./images/placeholder.jpeg"], price: 250, category: Categories.floorCarpets },
-  { id: "fc2", name: "30x6 Green Mat", imageAssets: ["./images/placeholder.jpeg"], price: 250, category: Categories.floorCarpets },
+  { id: "fc1", name: "15x6 Green Mat", imageAssets: ["./images/Floor Carpets/Greenmat.jpg"], price: 250, category: Categories.floorCarpets },
+  { id: "fc2", name: "30x6 Green Mat", imageAssets: ["./images/Floor Carpets/Greenmat.jpg"], price: 250, category: Categories.floorCarpets },
   { id: "fc3", name: "12x6 Jamkanam", imageAssets: ["./images/placeholder.jpeg"], price: 100, category: Categories.floorCarpets },
-  { id: "fc4", name: "12x9 Tiwachi", imageAssets: ["./images/placeholder.jpeg"], price: 500, category: Categories.floorCarpets },
+  { id: "fc4", name: "12x9 Tiwachi", imageAssets: ["./images/Floor Carpets/Tiwachi.jpg"], price: 500, category: Categories.floorCarpets },
 
   // ─────────────────────────── Fans & Coolers ───────────────────────────
-  { id: "fac1", name: "Fan", imageAssets: ["./images/placeholder.jpeg"], price: 150, category: Categories.fansAndCoolers },
-  { id: "fac2", name: "Mini Cooler", imageAssets: ["./images/placeholder.jpeg"], price: 500, category: Categories.fansAndCoolers },
-  { id: "fac3", name: "Jumbo Cooler", imageAssets: ["./images/placeholder.jpeg"], price: 1500, category: Categories.fansAndCoolers },
+   { id: "fac1", name: "Fan", imageAssets: ["./images/Fans&Coolers/Fan.jpg"], price: 150, category: Categories.fansAndCoolers },
+  { id: "fac2", name: "Mini Cooler", imageAssets: ["./images/Fans&Coolers/Mini Cooler.jpg"], price: 500, category: Categories.fansAndCoolers },
+  { id: "fac3", name: "Jumbo Cooler", imageAssets: ["./images/Fans&Coolers/Jumbo Cooler.jpg"], price: 1500, category: Categories.fansAndCoolers },
 
   // ─────────────────────────── Special Items ───────────────────────────
   { id: "spi1", name: "Uyyala", imageAssets: ["./images/placeholder.jpeg"], price: 599, category: Categories.specialItems },
