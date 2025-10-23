@@ -74,12 +74,12 @@ export const kCatalog: Item[] = [
   { id: "pi8", name: "3.5F Kundena", imageAssets: ["./images/PoojaItems/Kundena3.jpg"], price: 300, category: Categories.poojaItems },
 
   // ─────────────────────────── Backdrops & Sidewalls ───────────────────────────
-  { id: "bs1", name: "Side Curtain 1", imageAssets: ["./images/shamiyana3.jpg"], price: 499, category: Categories.backdropsAndSideWalls },
-  { id: "bs2", name: "Side Curtain 2", imageAssets: ["./images/shamiyana3.jpg"], price: 600, category: Categories.backdropsAndSideWalls },
-  { id: "bs3", name: "Colour Curtain 15F", imageAssets: ["./images/shamiyana3.jpg"], price: 50, category: Categories.backdropsAndSideWalls },
-  { id: "bs4", name: "Colour Curtain 30F", imageAssets: ["./images/shamiyana3.jpg"], price: 100, category: Categories.backdropsAndSideWalls },
-  { id: "bs5", name: "White Curtain 15F", imageAssets: ["./images/shamiyana3.jpg"], price: 100, category: Categories.backdropsAndSideWalls },
-  { id: "bs6", name: "White Curtain 30F", imageAssets: ["./images/shamiyana3.jpg"], price: 200, category: Categories.backdropsAndSideWalls },
+  { id: "bs1", name: "Side Curtain 1", imageAssets: ["./images/placeholder.jpeg"], price: 499, category: Categories.backdropsAndSideWalls },
+  { id: "bs2", name: "Side Curtain 2", imageAssets: ["./images/placeholder.jpeg"], price: 600, category: Categories.backdropsAndSideWalls },
+  { id: "bs3", name: "Colour Curtain 15F", imageAssets: ["./images/placeholder.jpeg"], price: 50, category: Categories.backdropsAndSideWalls },
+  { id: "bs4", name: "Colour Curtain 30F", imageAssets: ["./images/placeholder.jpeg"], price: 100, category: Categories.backdropsAndSideWalls },
+  { id: "bs5", name: "White Curtain 15F", imageAssets: ["./images/placeholder.jpeg"], price: 100, category: Categories.backdropsAndSideWalls },
+  { id: "bs6", name: "White Curtain 30F", imageAssets: ["./images/placeholder.jpeg"], price: 200, category: Categories.backdropsAndSideWalls },
 
   // ─────────────────────────── Chairs & Sofas ───────────────────────────
 { id: "cs1", name: "Blue Chair", imageAssets: ["./images/Chairs&Sofas/BlueChair.jpg"], price: 5, category: Categories.chairsAndSofas },
