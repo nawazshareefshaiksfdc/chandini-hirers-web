@@ -97,12 +97,20 @@ export const kCatalog: Item[] = [
   { id: "cs8", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Sofa.png","./images/Chairs&Sofas/Sofa1.jpg"], price: 1500, category: Categories.chairsAndSofas },
   
   // ─────────────────────────── Tables & Stage ───────────────────────────
-  { id: "tss1", name: "Single Stall Set", imageAssets: ["./images/placeholder.jpeg"], price: 399, category: Categories.tablesAndStage },
-  { id: "tss2", name: "Double Stall Set", imageAssets: ["./images/placeholder.jpeg"], price: 799, category: Categories.tablesAndStage },
-  { id: "tss3", name: "Dining Table", imageAssets: ["./images/placeholder.jpeg"], price: 50, category: Categories.tablesAndStage },
-  { id: "tss4", name: "Round Table", imageAssets: ["./images/placeholder.jpeg"], price: 299, category: Categories.tablesAndStage },
-  { id: "tss5", name: "3x3 1F Stage", imageAssets: ["./images/placeholder.jpeg"], price: 100, category: Categories.tablesAndStage },
-  { id: "tss6", name: "4x4 3F Stage", imageAssets: ["./images/placeholder.jpeg"], price: 300, category: Categories.tablesAndStage },
+  { id: "tss1", name: "Single Stall Set", imageAssets: ["./images/TablesStalls&Stage/SingleStall1.jpeg","./images/TablesStalls&Stage/SingleStall2.jpeg"], price: 399, category: Categories.tablesAndStage },
+  { id: "tss2", name: "Double Stall Set", imageAssets: ["./images/TablesStalls&Stage/DoubleStall.jpeg"], price: 799, category: Categories.tablesAndStage },
+  { id: "tss3", name: "Dining Table", imageAssets: ["./images/TablesStalls&Stage/dinningTable.jpeg"], price: 50, category: Categories.tablesAndStage },
+  { id: "tss3", name: "Table with Cloth", imageAssets: ["./images/TablesStalls&Stage/TableWithCloth.jpeg"], price: 150, category: Categories.tablesAndStage },
+  { id: "tss4", name: "Round Table", imageAssets: ["./images/TablesStalls&Stage/RoundTable1.jpg","./images/TablesStalls&Stage/RoundTable2.jpg"], price: 299, category: Categories.tablesAndStage },
+  { id: "tss5", name: "3x3 1F Stage", imageAssets: ["./images/TablesStalls&Stage/1FeetStage1.jpeg","./images/TablesStalls&Stage/1FeetStage2.jpeg"], price: 100, category: Categories.tablesAndStage },
+  { id: "tss5", name: "3x3 1.5F Stage", imageAssets: ["./images/1.5FeetStage.jpeg"], price: 130, category: Categories.tablesAndStage },
+  { id: "tss5", name: "3x3 2F Stage", imageAssets: ["./images/2FeetStage1.jpeg"], price: 100, category: Categories.tablesAndStage },
+  { id: "tss5", name: "4x4 1F Stage", imageAssets: ["./images/TablesStalls&Stage/1FeetStage2.jpeg"], price: 200, category: Categories.tablesAndStage },
+  { id: "tss5", name: "4x4 3F Stage", imageAssets: ["./images/TablesStalls&Stage/3FeetStage.jpg"], price: 300, category: Categories.tablesAndStage },
+  { id: "tss5", name: "4x4 4F Stage", imageAssets: ["./images/TablesStalls&Stage/4FeetStage.jpeg"], price: 300, category: Categories.tablesAndStage },
+  { id: "tss5", name: "2F Stage Step", imageAssets: ["./images/TablesStalls&Stage/2FeetStep.jpeg"], price: 200, category: Categories.tablesAndStage },
+  { id: "tss5", name: "3F Stage Step", imageAssets: ["./images/TablesStalls&Stage/3FeetStep.jpeg"], price: 400, category: Categories.tablesAndStage },
+  { id: "tss5", name: "4F Stage Step", imageAssets: ["./images/TablesStalls&Stage/4FStep.jpeg"], price: 400, category: Categories.tablesAndStage },
 
   // ─────────────────────────── Floor Carpets ───────────────────────────
   { id: "fc1", name: "15x6 Green Mat", imageAssets: ["./images/Floor Carpets/Greenmat.jpg"], price: 250, category: Categories.floorCarpets },
