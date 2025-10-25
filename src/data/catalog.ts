@@ -74,7 +74,7 @@ export const kCatalog: Item[] = [
   { id: "pi8", name: "3.5F Kundena", imageAssets: ["./images/PoojaItems/Kundena3.jpg"], price: 300, category: Categories.poojaItems },
 
   // ─────────────────────────── Backdrops & Sidewalls ───────────────────────────
- { id: "bs1", name: "15*10 Background Screen", imageAssets: ["./images/Backdrops&Sidewalls/Sidewall1.png","./images/Backdrops&Sidewalls/Sidewall2.jpg","./images/Backdrops&Sidewalls/Sidewall3.jpg","./images/Backdrops&Sidewalls/Sidewall4.jpg","./images/Backdrops&Sidewalls/Sidewall5.jpg"], price: 499, category: Categories.backdropsAndSideWalls },
+  { id: "bs1", name: "15*10 Background Screen", imageAssets: ["./images/Backdrops&Sidewalls/Sidewall1.png","./images/Backdrops&Sidewalls/Sidewall2.jpg","./images/Backdrops&Sidewalls/Sidewall3.jpg","./images/Backdrops&Sidewalls/Sidewall4.jpg","./images/Backdrops&Sidewalls/Sidewall5.jpg"], price: 499, category: Categories.backdropsAndSideWalls },
   { id: "bs2", name: "8*10 Background Screen", imageAssets: ["./images/Backdrops&Sidewalls/SidewallSmall.jpg"], price: 300, category: Categories.backdropsAndSideWalls },
   { id: "bs3", name: "18*10 Background Screen", imageAssets: ["./images/Backdrops&Sidewalls/BigScreenWall.jpg"], price: 600, category: Categories.backdropsAndSideWalls },
   { id: "bs4", name: "Flower Decoration", imageAssets: ["./images/Backdrops&Sidewalls/FlowerDecoration.jpg"], price: 3000, category: Categories.backdropsAndSideWalls },
@@ -92,11 +92,11 @@ export const kCatalog: Item[] = [
   { id: "cs5", name: "Steel Sofa", imageAssets: ["./images/Chairs&Sofas/StealSofa.png","./images/Chairs&Sofas/StealSofa.jpg"], price: 299, category: Categories.chairsAndSofas },
   { id: "cs6", name: "Steel Sofa with Cloth", imageAssets: ["./images/Chairs&Sofas/SSSofaWithCloth.jpg"], price: 399, category: Categories.chairsAndSofas },
   { id: "cs7", name: "Baby Chair", imageAssets: ["./images/Chairs&Sofas/BabyChair.jpg"], price: 299, category: Categories.chairsAndSofas },
-  { id: "cs7", name: "Single Raja Chair", imageAssets: ["./images/Chairs&Sofas/Maharaja1.jpg","./images/Chairs&Sofas/Maharaja2.jpg"], price: 500, category: Categories.chairsAndSofas },
-  { id: "cs7", name: "Single Raja Chair", imageAssets: ["./images/Chairs&Sofas/Maharaja.jpg"], price: 800, category: Categories.chairsAndSofas },
-  { id: "cs7", name: "Single white Raja", imageAssets: ["./images/Chairs&Sofas/SingleRajaChair.jpeg"], price: 1000, category: Categories.chairsAndSofas },
-  { id: "cs8", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Sofa2.jpg"], price: 1000, category: Categories.chairsAndSofas },
-  { id: "cs8", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Sofa.png","./images/Chairs&Sofas/Sofa1.jpg"], price: 1500, category: Categories.chairsAndSofas },
+  { id: "cs8", name: "Single Raja Chair", imageAssets: ["./images/Chairs&Sofas/Maharaja1.jpg","./images/Chairs&Sofas/Maharaja2.jpg"], price: 500, category: Categories.chairsAndSofas },
+  { id: "cs9", name: "Single Raja Chair", imageAssets: ["./images/Chairs&Sofas/Maharaja.jpg"], price: 800, category: Categories.chairsAndSofas },
+  { id: "cs10", name: "Single white Raja", imageAssets: ["./images/Chairs&Sofas/SingleRajaChair.jpeg"], price: 1000, category: Categories.chairsAndSofas },
+  { id: "cs11", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Sofa2.jpg"], price: 1000, category: Categories.chairsAndSofas },
+  { id: "cs12", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Sofa.png","./images/Chairs&Sofas/Sofa1.jpg"], price: 1500, category: Categories.chairsAndSofas },
   
   // ─────────────────────────── Tables & Stage ───────────────────────────
   { id: "tss1", name: "Single Stall Set", imageAssets: ["./images/TablesStalls&Stage/SingleStall1.jpeg","./images/TablesStalls&Stage/SingleStall2.jpeg"], price: 399, category: Categories.tablesAndStage },
