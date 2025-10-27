@@ -33,7 +33,7 @@ export const ALL_CATEGORIES = [
 // ✅ Catalog Data
 export const kCatalog: Item[] = [
   // ─────────────────────────── Shamiyanas ───────────────────────────
-  { id: "sha1", name: "12x9 Shamiyana", imageAssets: ["./images/shamiyana1.jpg","./images/placeholder.jpeg","./images/placeholder.jpeg"], previewImage: "/images/placeholder.jpeg", price: 599, category: Categories.shamiyanas },
+  { id: "sha1", name: "12x9 Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], previewImage: "./images/shamiyana1.jpg", price: 599, category: Categories.shamiyanas },
   { id: "sha2", name: "12x12 Shamiyana", imageAssets: ["./images/shamiyana2.jpg"], price: 599, category: Categories.shamiyanas },
   { id: "sha3", name: "15x12 Shamiyana", imageAssets: ["./images/shamiyana3.jpg"], price: 599, category: Categories.shamiyanas },
   { id: "sha4", name: "18x9 Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 799, category: Categories.shamiyanas },
@@ -74,14 +74,14 @@ export const kCatalog: Item[] = [
   { id: "pi8", name: "3.5F Kundena", imageAssets: ["./images/PoojaItems/Kundena3.jpg"], price: 300, category: Categories.poojaItems },
 
   // ─────────────────────────── Backdrops & Sidewalls ───────────────────────────
-  { id: "bs1", name: "15*10 Background Screen", imageAssets: ["./images/Backdrops&Sidewalls/Sidewall1.png","./images/Backdrops&Sidewalls/Sidewall2.jpg","./images/Backdrops&Sidewalls/Sidewall3.jpg","./images/Backdrops&Sidewalls/Sidewall4.jpg","./images/Backdrops&Sidewalls/Sidewall5.jpg"], price: 499, category: Categories.backdropsAndSideWalls },
+ { id: "bs1", name: "15*10 Background Screen", imageAssets: ["./images/Backdrops&Sidewalls/Sidewall1.png","./images/Backdrops&Sidewalls/Sidewall2.jpg","./images/Backdrops&Sidewalls/Sidewall3.jpg","./images/Backdrops&Sidewalls/Sidewall4.jpg","./images/Backdrops&Sidewalls/Sidewall5.jpg"], price: 499, category: Categories.backdropsAndSideWalls },
   { id: "bs2", name: "8*10 Background Screen", imageAssets: ["./images/Backdrops&Sidewalls/SidewallSmall.jpg"], price: 300, category: Categories.backdropsAndSideWalls },
   { id: "bs3", name: "18*10 Background Screen", imageAssets: ["./images/Backdrops&Sidewalls/BigScreenWall.jpg"], price: 600, category: Categories.backdropsAndSideWalls },
   { id: "bs4", name: "Flower Decoration", imageAssets: ["./images/Backdrops&Sidewalls/FlowerDecoration.jpg"], price: 3000, category: Categories.backdropsAndSideWalls },
-  { id: "bs5", name: "Colour Curtain 15F", imageAssets: ["./images/placeholder.jpeg"], price: 50, category: Categories.backdropsAndSideWalls },
-  { id: "bs6", name: "Colour Curtain 30F", imageAssets: ["./images/placeholder.jpeg"], price: 100, category: Categories.backdropsAndSideWalls },
-  { id: "bs7", name: "White Curtain 15F", imageAssets: ["./images/placeholder.jpeg"], price: 100, category: Categories.backdropsAndSideWalls },
-  { id: "bs8", name: "White Curtain 30F", imageAssets: ["./images/placeholder.jpeg"], price: 200, category: Categories.backdropsAndSideWalls },
+  { id: "bs5", name: "Colour Curtain 15F", imageAssets: ["./images/Backdrops&Sidewalls/ColourSidewall1.jpg","./images/Backdrops&Sidewalls/ColourSidewall2.jpg"], price: 50, category: Categories.backdropsAndSideWalls },
+  { id: "bs6", name: "Colour Curtain 30F", imageAssets: ["./images/Backdrops&Sidewalls/ColourSidewall2.jpg","./images/Backdrops&Sidewalls/ColourSidewall1.jpg"], price: 100, category: Categories.backdropsAndSideWalls },
+  { id: "bs7", name: "White Curtain 15F", imageAssets: ["./images/Backdrops&Sidewalls/WhiteSidewall1.jpeg","./images/Backdrops&Sidewalls/WhiteSidewall2.jpeg"], price: 100, category: Categories.backdropsAndSideWalls },
+  { id: "bs8", name: "White Curtain 30F", imageAssets: ["./images/Backdrops&Sidewalls/WhiteSidewall2.jpeg","./images/Backdrops&Sidewalls/WhiteSidewall1.jpeg"], price: 200, category: Categories.backdropsAndSideWalls },
 
   // ─────────────────────────── Chairs & Sofas ───────────────────────────
 { id: "cs1", name: "Blue Chair", imageAssets: ["./images/Chairs&Sofas/BlueChair.jpg"], price: 5, category: Categories.chairsAndSofas },
@@ -155,7 +155,7 @@ export const kCatalog: Item[] = [
 
   // ─────────────────────────── Cooking & Serving Items ───────────────────────────
  { id: "csi1", name: "Gangalam", imageAssets: ["./images/ServingItems/Gangalam.jpg"], price: 150, category: Categories.cookingAndServingItems },
-  { id: "csi2", name: "Ring Stand", imageAssets: ["./images/placeholder.jpeg"], price: 100, category: Categories.cookingAndServingItems },
+  { id: "csi2", name: "Ring Stand", imageAssets: ["./images/ServingItems/RingStand.jpg"], price: 100, category: Categories.cookingAndServingItems },
   { id: "csi3", name: "Theddu", imageAssets: ["./images/ServingItems/Teddu.jpg"], price: 50, category: Categories.cookingAndServingItems },
   { id: "csi4", name: "Vada butta", imageAssets: ["./images/ServingItems/Vadabutta.jpg"], price: 100, category: Categories.cookingAndServingItems },
   { id: "csi5", name: "Jelly Garite", imageAssets: ["./images/ServingItems/JelliGenti.jpg"], price: 50, category: Categories.cookingAndServingItems },
