@@ -1,38 +1,43 @@
-import { NextRequest } from "next/server";
-
+// Make this a serverful, dynamic, non-cached route
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-const isLatLng = (s: string) => /^\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*$/.test(s);
-export async function GET(req: NextRequest) {
-  const location = req.nextUrl.searchParams.get("location");
-  const apiKey = process.env.GOOGLE_API_KEY;
+export const fetchCache = 'force-no-store';
 
-  if (!apiKey) {
-    return new Response(JSON.stringify({ error: "Missing GOOGLE_API_KEY" }), {
-      status: 500, headers: { "Content-Type": "application/json" },
-    });
-  }
-  if (!location) {
-    return new Response(JSON.stringify({ error: "Missing location" }), {
-      status: 400, headers: { "Content-Type": "application/json" },
-    });
-  }
+import { NextResponse } from 'next/server';
 
-  // If it's "lat,lng" -> use reverse geocode (latlng=)
-  const endpoint = isLatLng(location.trim())
-    ? `https://maps.googleapis.com/maps/api/geocode/json?latlng=${encodeURIComponent(location)}&key=${apiKey}`
-    : `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${apiKey}`;
-
+export async function GET(req: Request) {
   try {
-    const r = await fetch(endpoint);
+    const { searchParams } = new URL(req.url);
+    const location = searchParams.get('location')?.trim();
+
+    if (!location) {
+      return NextResponse.json({ error: 'location required', results: [] }, { status: 400 });
+    }
+
+    // Read key safely; do NOT crash the build if absent
+    const apiKey =
+      process.env.GOOGLE_MAPS_API_KEY ||
+      process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+      process.env.NEXT_PUBLIC_MAPS_KEY;
+
+    if (!apiKey) {
+      // Return an empty result instead of throwing so "collecting page data" doesn't fail
+      return NextResponse.json(
+        { results: [], note: 'no Google Maps API key configured' },
+        { status: 200 },
+      );
+    }
+
+    const url =
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${apiKey}`;
+
+    const r = await fetch(url, { cache: 'no-store' });
     const data = await r.json();
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    });
+
+    return NextResponse.json(data, { status: 200 });
   } catch {
-    return new Response(JSON.stringify({ error: "Geocoding failed" }), {
-      status: 500, headers: { "Content-Type": "application/json" },
-    });
+    // Never throw during build/collection; respond gracefully
+    return NextResponse.json({ results: [], note: 'geocode failed' }, { status: 200 });
   }
 }

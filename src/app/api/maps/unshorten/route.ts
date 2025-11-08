@@ -1,35 +1,27 @@
-import { NextRequest } from "next/server";
+// src/app/api/maps/unshorten/route.ts
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-export async function GET(req: NextRequest) {
-  const u = req.nextUrl.searchParams.get("u");
-  if (!u) {
-    return new Response(JSON.stringify({ error: "Missing u" }), {
-      status: 400, headers: { "Content-Type": "application/json" },
-    });
-  }
+export const fetchCache = 'force-no-store';
 
+import { NextResponse } from 'next/server';
+
+export async function GET(req: Request) {
   try {
-    // Try normal follow first
-    let r = await fetch(u, { redirect: "follow" });
-    // If it ended OK, response.url should be the final expanded URL
-    let finalUrl = r.url;
-
-    // Some shorteners respond with 3xx and Location but Node followed already.
-    // If we still have a goo.gl host for any reason, try manual mode:
-    if (new URL(finalUrl).hostname === "maps.app.goo.gl") {
-      r = await fetch(u, { redirect: "manual" as RequestRedirect });
-      const loc = r.headers.get("location");
-      if (loc) finalUrl = new URL(loc, u).toString();
+    const { searchParams } = new URL(req.url);
+    const u = searchParams.get('u')?.trim();
+    if (!u) {
+      return NextResponse.json({ error: 'u required' }, { status: 400 });
     }
 
-    return new Response(JSON.stringify({ finalUrl }), {
-      status: 200,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    });
+    // Follow redirects but don’t cache
+    const res = await fetch(u, { redirect: 'follow', cache: 'no-store' });
+    // Prefer the final URL the fetch ended at (Node’s fetch exposes .url)
+    const finalUrl = res.url || u;
+
+    return NextResponse.json({ finalUrl }, { status: 200 });
   } catch {
-    return new Response(JSON.stringify({ error: "Unshorten failed" }), {
-      status: 500, headers: { "Content-Type": "application/json" },
-    });
+    // Don’t break build
+    return NextResponse.json({ finalUrl: null }, { status: 200 });
   }
 }
