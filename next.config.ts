@@ -1,11 +1,13 @@
 // next.config.ts
 import type { NextConfig } from "next";
 
-const base = process.env.NEXT_PUBLIC_BASE_PATH || ""; // e.g. "/chandini-hirers-web"
+const base = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 const nextConfig: NextConfig = {
-  images: { unoptimized: true },         
-  basePath: base || undefined,          
+  output: "export",
+  images: { unoptimized: true },
+  basePath: base || undefined,
+  assetPrefix: base || undefined,
 };
 
 export default nextConfig;

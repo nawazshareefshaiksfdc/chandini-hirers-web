@@ -311,22 +311,6 @@ export async function generateCartPdfBytes({
 
   // ...
 
-  const kv: Array<[label: string, value?: string]> = [
-    ["Generated:", dateStr],
-    ["Customer:", customer?.name || ""],
-    ["Phone:", customer?.phone || ""],
-    ["Event:", customer?.eventType || ""],
-    [
-      "When:",
-      customer?.startDateTime && customer?.endDateTime
-        ? `${fmtLocal(customer.startDateTime)} to ${fmtLocal(customer.endDateTime)}`
-        : (customer?.startDateTime || "")
-    ],
-    ["Address:", customer?.address || ""],
-    ["Map:", customer?.mapUrl || ""],
-  ];
-
-
   const drawHeader = () => {
     drawTiledDiagonalWatermark(doc, "chandini hirers");
 

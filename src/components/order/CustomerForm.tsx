@@ -14,13 +14,41 @@ import {
 import { InputField, TextareaField, SelectField, uiFieldClass } from "@/components/ui/Field";
 import { RefreshCcw, LocateFixed, X, Pen, Trash2 } from "lucide-react";
 
+/* =================== Config =================== */
+// ❗ Use a REFERRER-restricted browser key only:
+const PUBLIC_MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+/* ============ Client-only helpers ============ */
+/** No server in static Pages, so we can't truly unshorten safely. */
+async function clientUnshortenNoop(_u: string): Promise<string | null> {
+  // Without a server, we just return null to keep behavior graceful.
+  return null;
+}
+
+/** Optional client-side geocode (only if a safe NEXT_PUBLIC key is provided). */
+async function clientGeocodeOptional(location: string): Promise<string | null> {
+  if (!PUBLIC_MAPS_KEY) return null; // no browser key → skip
+  try {
+    const url =
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${PUBLIC_MAPS_KEY}`;
+    const r = await fetch(url, { cache: "no-store" });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const addr = j?.results?.[0]?.formatted_address as string | undefined;
+    return addr ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/* =================== UI Component =================== */
+
 export type CustomerFormProps = {
   value: CustomerForm;
   onChange: (next: CustomerForm) => void;
   onSubmit?: (validForm: CustomerForm) => void;
   editing?: boolean;
   showHeader?: boolean;
-  /** NEW: header action callbacks */
   onEdit?: () => void;
   onDelete?: () => void;
 };
@@ -37,27 +65,6 @@ const EVENT_OPTIONS = [
   "Festival",
   "Others",
 ];
-
-async function apiUnshorten(u: string): Promise<string | null> {
-  try {
-    const r = await fetch(`/api/maps/unshorten?u=${encodeURIComponent(u)}`);
-    const j = await r.json();
-    return j?.finalUrl ?? null;
-  } catch {
-    return null;
-  }
-}
-
-async function apiGeocode(location: string): Promise<string | null> {
-  try {
-    const r = await fetch(`/api/maps/geocode?location=${encodeURIComponent(location)}`);
-    const j = await r.json();
-    const addr = j?.results?.[0]?.formatted_address as string | undefined;
-    return addr ?? null;
-  } catch {
-    return null;
-  }
-}
 
 export default function CustomerFormCard({
   value,
@@ -91,7 +98,6 @@ export default function CustomerFormCard({
     let canceled = false;
 
     (async () => {
-      // reset if empty
       if (!value.mapUrl) {
         if (canceled) return;
         setMapEmbed(null);
@@ -102,18 +108,17 @@ export default function CustomerFormCard({
 
       const working = value.mapUrl;
 
-      // 1) expand maps.app.goo.gl short links (await safely inside IIFE)
+      // 1) Short links: without a server we *cannot* expand. Try a noop, keep UX note.
       if (isGoogleShortLink(working)) {
-        const finalUrl = await apiUnshorten(working);
+        const finalUrl = await clientUnshortenNoop(working);
         if (canceled) return;
         if (finalUrl && finalUrl !== working) {
-          // trigger another run of this effect with the expanded URL
           onChange({ ...value, mapUrl: finalUrl });
           return;
         }
       }
 
-      // 2) DMS pair -> embed + optional reverse geocode
+      // 2) DMS
       const dms = parseDMSPair(working);
       if (dms) {
         const embed = buildEmbedFromLatLng(dms.lat, dms.lng);
@@ -123,13 +128,13 @@ export default function CustomerFormCard({
         setLastGuess(`${dms.lat}, ${dms.lng}`);
 
         if (autoFillAddress && (!value.address || value.address.trim().length < 6)) {
-          const addr = await apiGeocode(`${dms.lat},${dms.lng}`);
+          const addr = await clientGeocodeOptional(`${dms.lat},${dms.lng}`);
           if (!canceled && addr) onChange({ ...value, address: addr });
         }
         return;
       }
 
-      // 3) decimal pair -> embed + optional reverse geocode
+      // 3) Decimal pair
       const dec = parseDecimalPair(working);
       if (dec) {
         const embed = buildEmbedFromLatLng(dec.lat, dec.lng);
@@ -139,13 +144,13 @@ export default function CustomerFormCard({
         setLastGuess(`${dec.lat}, ${dec.lng}`);
 
         if (autoFillAddress && (!value.address || value.address.trim().length < 6)) {
-          const addr = await apiGeocode(`${dec.lat},${dec.lng}`);
+          const addr = await clientGeocodeOptional(`${dec.lat},${dec.lng}`);
           if (!canceled && addr) onChange({ ...value, address: addr });
         }
         return;
       }
 
-      // 4) anything else -> normalize + try to extract coords/address
+      // 4) Generic URL/iframe
       const norm = normalizeMapInput(working);
       if (canceled) return;
       setMapEmbed(norm.embedSrc);
@@ -155,7 +160,7 @@ export default function CustomerFormCard({
       if (latLng) {
         setLastGuess(`${latLng.lat}, ${latLng.lng}`);
         if (autoFillAddress && (!value.address || value.address.trim().length < 6)) {
-          const addr = await apiGeocode(`${latLng.lat},${latLng.lng}`);
+          const addr = await clientGeocodeOptional(`${latLng.lat},${latLng.lng}`);
           if (!canceled && addr) onChange({ ...value, address: addr });
         }
       } else {
@@ -170,13 +175,15 @@ export default function CustomerFormCard({
       canceled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value.mapUrl]);
-const minNow = useMemo(() => {
-  const d = new Date();
-  d.setSeconds(0, 0);
-  const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}, []);
+  }, [value.mapUrl, autoFillAddress]);
+
+  const minNow = useMemo(() => {
+    const d = new Date();
+    d.setSeconds(0, 0);
+    const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }, []);
+
   const setField = <K extends keyof CustomerForm>(key: K, v: CustomerForm[K]) =>
     onChange({ ...value, [key]: v });
 
@@ -184,7 +191,7 @@ const minNow = useMemo(() => {
   const handleSyncAddress = async () => {
     const latLng = mapEmbed ? extractLatLngFromEmbed(mapEmbed) : null;
     if (latLng) {
-      const addr = await apiGeocode(`${latLng.lat},${latLng.lng}`);
+      const addr = await clientGeocodeOptional(`${latLng.lat},${latLng.lng}`);
       if (addr) return onChange({ ...value, address: addr });
       return onChange({ ...value, address: `${latLng.lat}, ${latLng.lng}` });
     }
@@ -197,13 +204,13 @@ const minNow = useMemo(() => {
       async (pos) => {
         const { latitude, longitude } = pos.coords;
         const embed = buildEmbedFromLatLng(latitude, longitude);
-        const addr = await apiGeocode(`${latitude},${longitude}`);
+        const addr = await clientGeocodeOptional(`${latitude},${longitude}`);
         onChange({
           ...value,
           mapUrl: `${latitude},${longitude}`,
           address: addr ?? value.address,
         });
-               setMapEmbed(embed);
+        setMapEmbed(embed);
         setLastGuess(`${latitude}, ${longitude}`);
       },
       () => {
@@ -225,7 +232,6 @@ const minNow = useMemo(() => {
         <div className="flex items-center justify-between">
           <h3 className="text-white font-semibold text-lg">Customer Details</h3>
 
-          {/* NEW: Header Actions */}
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -281,69 +287,67 @@ const minNow = useMemo(() => {
 
       {/* Row 2 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-  <SelectField
-    label="Event Type"
-    value={value.eventType}
-    disabled={!editing}
-    onChange={(e) => setField("eventType", (e.target as HTMLSelectElement).value)}
-    onBlur={() => setTouched((t) => ({ ...t, eventType: true }))}
-    invalid={!!touched.eventType && !validators.eventType(value.eventType)}
-    hint="Please select an event"
-  >
-    <option value="">Select an event</option>
-    {EVENT_OPTIONS.map((opt) => (
-      <option key={opt} value={opt}>
-        {opt}
-      </option>
-    ))}
-  </SelectField>
+        <SelectField
+          label="Event Type"
+          value={value.eventType}
+          disabled={!editing}
+          onChange={(e) => setField("eventType", (e.target as HTMLSelectElement).value)}
+          onBlur={() => setTouched((t) => ({ ...t, eventType: true }))}
+          invalid={!!touched.eventType && !validators.eventType(value.eventType)}
+          hint="Please select an event"
+        >
+          <option value="">Select an event</option>
+          {EVENT_OPTIONS.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </SelectField>
 
-  {/* Start (From) */}
-  <InputField
-    type="datetime-local"
-    label="Start (From)"
-    value={value.startDateTime}
-    min={minNow}
-    disabled={!editing}
-    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-      const nextStart = e.target.value;
-      // if end exists but is not after new start, bump end = start + 1 hour
-      const s = new Date(nextStart.replace("T", " ") + ":00");
-      const eDate = value.endDateTime ? new Date(value.endDateTime.replace("T", " ") + ":00") : null;
-      let nextEnd = value.endDateTime;
-      if (s.toString() !== "Invalid Date") {
-        if (!eDate || eDate.getTime() <= s.getTime()) {
-          const tmp = new Date(s.getTime() + 60 * 60 * 1000);
-          const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
-          nextEnd = `${tmp.getFullYear()}-${pad(tmp.getMonth() + 1)}-${pad(tmp.getDate())}T${pad(tmp.getHours())}:${pad(tmp.getMinutes())}`;
-        }
-      }
-      onChange({ ...value, startDateTime: nextStart, endDateTime: nextEnd });
-    }}
-    onBlur={() => setTouched((t) => ({ ...t, startDateTime: true }))}
-    invalid={!!touched.startDateTime && !validators.startDateTime(value.startDateTime)}
-    hint="Must be a future date & time"
-    onClear={() => setField("startDateTime", "")}
-  />
-</div>
+        {/* Start (From) */}
+        <InputField
+          type="datetime-local"
+          label="Start (From)"
+          value={value.startDateTime}
+          min={minNow}
+          disabled={!editing}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            const nextStart = e.target.value;
+            const s = new Date(nextStart.replace("T", " ") + ":00");
+            const eDate = value.endDateTime ? new Date(value.endDateTime.replace("T", " ") + ":00") : null;
+            let nextEnd = value.endDateTime;
+            if (s.toString() !== "Invalid Date") {
+              if (!eDate || eDate.getTime() <= s.getTime()) {
+                const tmp = new Date(s.getTime() + 60 * 60 * 1000);
+                const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+                nextEnd = `${tmp.getFullYear()}-${pad(tmp.getMonth() + 1)}-${pad(tmp.getDate())}T${pad(tmp.getHours())}:${pad(tmp.getMinutes())}`;
+              }
+            }
+            onChange({ ...value, startDateTime: nextStart, endDateTime: nextEnd });
+          }}
+          onBlur={() => setTouched((t) => ({ ...t, startDateTime: true }))}
+          invalid={!!touched.startDateTime && !validators.startDateTime(value.startDateTime)}
+          hint="Must be a future date & time"
+          onClear={() => setField("startDateTime", "")}
+        />
+      </div>
 
-{/* Row 3 — End (To) alone to keep layout tidy */}
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-  {/* Left cell empty on large screens to align nicely; remove if you prefer */}
-  <div className="hidden sm:block" />
-  <InputField
-    type="datetime-local"
-    label="End (To)"
-    value={value.endDateTime}
-    min={value.startDateTime || minNow}
-    disabled={!editing}
-    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setField("endDateTime", e.target.value)}
-    onBlur={() => setTouched((t) => ({ ...t, endDateTime: true }))}
-    invalid={!!touched.endDateTime && !validators.endDateTime(value.endDateTime, value.startDateTime)}
-    hint="Must be after Start and in the future"
-    onClear={() => setField("endDateTime", "")}
-  />
-</div>
+      {/* Row 3 — End (To) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="hidden sm:block" />
+        <InputField
+          type="datetime-local"
+          label="End (To)"
+          value={value.endDateTime}
+          min={value.startDateTime || minNow}
+          disabled={!editing}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setField("endDateTime", e.target.value)}
+          onBlur={() => setTouched((t) => ({ ...t, endDateTime: true }))}
+          invalid={!!touched.endDateTime && !validators.endDateTime(value.endDateTime, value.startDateTime)}
+          hint="Must be after Start and in the future"
+          onClear={() => setField("endDateTime", "")}
+        />
+      </div>
 
       {/* Address */}
       <TextareaField
@@ -358,13 +362,14 @@ const minNow = useMemo(() => {
         onClear={() => setField("address", "")}
       />
 
-      {/* Map URL + right-side toolbar */}
+      {/* Map URL + right toolbar */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="flex flex-col">
-          <label className="text-xs text-gray-400 mb-1">Google Map URL / iframe / coordinates (optional)</label>
+          <label className="text-xs text-gray-400 mb-1">
+            Google Map URL / iframe / coordinates (optional)
+          </label>
 
           <div className="flex items-stretch gap-2">
-            {/* Input */}
             <input
               className={uiFieldClass(!!touched.mapUrl && !validators.mapUrlOptional(value.mapUrl), editing) + " flex-1"}
               placeholder={`Paste link, iframe, "lat,lng" or DMS like 14°25'32.5"N 79°57'21.1"E`}
@@ -374,9 +379,7 @@ const minNow = useMemo(() => {
               onBlur={() => setTouched((t) => ({ ...t, mapUrl: true }))}
             />
 
-            {/* Right toolbar */}
             <div className="flex items-center gap-1">
-              {/* Clear map */}
               <button
                 type="button"
                 title="Clear map"
@@ -388,7 +391,6 @@ const minNow = useMemo(() => {
                 <X className="w-4 h-4" />
               </button>
 
-              {/* Use my location */}
               <button
                 type="button"
                 title="Use my current location"
@@ -400,7 +402,6 @@ const minNow = useMemo(() => {
                 <LocateFixed className="w-4 h-4" />
               </button>
 
-              {/* Sync parsed address */}
               <button
                 type="button"
                 title="Sync parsed location into Address"
@@ -416,8 +417,7 @@ const minNow = useMemo(() => {
 
           {isShortMap && (
             <p className="mt-1 text-[11px] text-amber-300">
-              Short link detected. It will auto-expand server-side; if preview or address looks wrong,
-              open the short link once and paste the full Google Maps URL or the “Embed map” iframe.
+              Short link detected. Static deploys can’t expand short links. Open it once and paste the full Google Maps URL or the “Embed map” iframe.
             </p>
           )}
 
@@ -444,7 +444,7 @@ const minNow = useMemo(() => {
               checked={autoFillAddress}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAutoFillAddress(e.target.checked)}
             />
-            Auto-fill Address from Map input
+            Auto-fill Address from Map input {PUBLIC_MAPS_KEY ? "(via Geocoding API)" : "(no geocoding—uses coords)"}
           </label>
         </div>
       </div>
