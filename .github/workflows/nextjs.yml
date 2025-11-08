@@ -47,7 +47,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
-          static_site_generator: next   # ✅ lets GH auto-inject basePath & unoptimized images
+          static_site_generator: next
 
       - name: Restore cache
         uses: actions/cache@v4
@@ -60,11 +60,15 @@ jobs:
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
 
-      # 👇 Add this so your client-side code can also read NEXT_PUBLIC_BASE_PATH
-      - name: Set base path env for client
+      - name: Set base path env
         run: echo "NEXT_PUBLIC_BASE_PATH=/${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
 
-      - name: Build with Next.js
+      - name: Set Google API env
+        run: |
+          echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}" >> $GITHUB_ENV
+          echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> $GITHUB_ENV
+
+      - name: Build (static export)
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
 
       - name: Upload artifact

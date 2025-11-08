@@ -4,11 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "clean": "rmdir /s /q .next || rm -rf .next",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "dev:clean": "npm run clean && npm run dev"
+    "build": "next build && next export -o out",
+    "start": "next start"
   },
   "dependencies": {
     "jspdf": "^3.0.3",

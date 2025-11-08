@@ -64,7 +64,7 @@ export default function ItemCard({ item }: { item: Item }) {
 
       {/* Item Info */}
       <div className="mt-2 text-center flex flex-col justify-between flex-grow">
-        <div className="font-semibold text-[13px] sm:text-sm line-clamp-2 min-h-[32px] text-white">
+        <div className="font-semibold text-[13px] sm:text-sm line-clamp-2 min-h-[32px] text-[color:var(--color-ink)]">
           {item.name}
         </div>
         <div className="text-[12px] font-medium text-green-400 mt-1">

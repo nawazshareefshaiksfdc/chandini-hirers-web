@@ -19,6 +19,20 @@ const INR0 = new Intl.NumberFormat("en-IN", {
 function formatINR(amount: number, fontsOk: boolean) {
   return fontsOk ? INR0.format(amount) : "Rs " + Math.round(amount).toLocaleString("en-IN");
 }
+function toLinkableUrl(raw?: string): string | null {
+  if (!raw) return null;
+  const s = raw.trim();
+  if (/^https?:\/\//i.test(s)) return s; // already a link
+
+  // If user pasted "lat,lng", make a Google Maps search URL
+  if (/^\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*$/.test(s)) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s)}`;
+  }
+
+  // Fallback: not a link we can safely convert
+  return null;
+}
+
 
 /* ============ Asset loading state (fonts/icons) ============== */
 let fontsReady = false;
@@ -30,6 +44,7 @@ let dejavuBoldB64: string | null = null;
 let iconsReady = false;
 let iconsPromise: Promise<void> | null = null;
 let iconInstagramB64: string | null = null;
+let iconWhatsAppB64: string | null = null;
 let iconYouTubeB64: string | null = null;
 let iconMapPinB64: string | null = null;
 
@@ -112,24 +127,31 @@ async function ensureFonts(doc: jsPDF) {
     doc.addFont("DejaVuSans.ttf", "DejaVu", "normal");
     doc.addFileToVFS("DejaVuSans-Bold.ttf", dejavuBoldB64);
     doc.addFont("DejaVuSans-Bold.ttf", "DejaVu", "bold");
-    try { doc.setFont("DejaVu", "normal"); } catch {}
+    try {
+      doc.setFont("DejaVu", "normal");
+    } catch { }
   } else {
     doc.setFont("helvetica", "normal");
   }
 }
 
 /* ========================= Icons ============================= */
+// TIP: change the filenames here if your assets differ (e.g., whatsapp.jpeg vs .png)
 async function _loadIcons() {
   try {
-    const [ig, yt, mp] = await Promise.all([
+    const [ig, wa, yt, mp] = await Promise.all([
       fetchAsBase64(withBase("icons/instagram.png"), "force-cache"),
+      fetchAsBase64(withBase("icons/whatsapp.jpeg"), "force-cache"),
       fetchAsBase64(withBase("icons/youtube.png"), "force-cache"),
       fetchAsBase64(withBase("icons/map-pin.png"), "force-cache"),
     ]);
     iconInstagramB64 = ig;
+    iconWhatsAppB64 = wa;
     iconYouTubeB64 = yt;
     iconMapPinB64 = mp;
-  } catch {} finally {
+  } catch {
+    // ignore; we'll just skip icons if any fail
+  } finally {
     iconsReady = true;
   }
 }
@@ -143,7 +165,11 @@ async function ensureIcons() {
 function drawTiledDiagonalWatermark(doc: jsPDF, text: string) {
   const width = doc.internal.pageSize.getWidth();
   const height = doc.internal.pageSize.getHeight();
-  const angle = 45, stepX = 120, stepY = 80, size = 9, gray = 200;
+  const angle = 45,
+    stepX = 120,
+    stepY = 80,
+    size = 9,
+    gray = 200;
 
   doc.saveGraphicsState?.();
   doc.setTextColor(gray, gray, gray);
@@ -168,26 +194,41 @@ function addFooterIcons(doc: jsPDF) {
   const gap = 18;
 
   doc.setFontSize(10);
-  try { doc.setFont("DejaVu", "bold"); } catch { doc.setFont("helvetica", "bold"); }
+  try {
+    doc.setFont("DejaVu", "bold");
+  } catch {
+    doc.setFont("helvetica", "bold");
+  }
   doc.text("Connect:", margin, centerY);
+
   let x = margin + doc.getTextWidth("Connect:") + 16;
 
-  const icons = [
-    { b64: iconInstagramB64, url: "https://www.instagram.com/chandhinihirers_nellore/" },
-    { b64: iconYouTubeB64, url: "https://www.youtube.com/@chandhinihirers_nellore" },
-    { b64: iconMapPinB64, url: "https://maps.app.goo.gl/o3orgsRNWrdUJZh76" },
+  // Provide format per icon so we embed correctly (PNG vs JPEG).
+  const icons: Array<{ b64: string | null; fmt: "PNG" | "JPEG"; url: string }> = [
+    { b64: iconInstagramB64, fmt: "PNG", url: "https://www.instagram.com/chandhinihirers_nellore/" },
+    { b64: iconWhatsAppB64, fmt: "JPEG", url: "https://wa.me/919000660208?text=Hello%20I%20want%20to%20know%20more%20about%20your%20services" },
+    { b64: iconYouTubeB64, fmt: "PNG", url: "https://www.youtube.com/@chandhinihirers_nellore" },
+    { b64: iconMapPinB64, fmt: "PNG", url: "https://maps.app.goo.gl/o3orgsRNWrdUJZh76" },
   ];
 
   icons.forEach((ico) => {
     if (ico.b64) {
-      doc.addImage(`data:image/png;base64,${ico.b64}`, "PNG", x, centerY - iconSize + 2, iconSize, iconSize);
-      doc.link(x, centerY - iconSize + 2, iconSize, iconSize, { url: ico.url });
-      x += iconSize + gap;
+      const mime = ico.fmt === "PNG" ? "image/png" : "image/jpeg";
+      const dataUrl = `data:${mime};base64,${ico.b64}`;
+      try {
+        doc.addImage(dataUrl, ico.fmt, x, centerY - iconSize + 2, iconSize, iconSize);
+        doc.link(x, centerY - iconSize + 2, iconSize, iconSize, { url: ico.url });
+        x += iconSize + gap;
+      } catch {
+        // skip if addImage fails for any reason
+      }
     }
   });
 }
 
+
 /* ==================== PDF Builder =========================== */
+/** Now prints ALL form inputs: name, phone, eventType, , address, mapUrl */
 export async function generateCartPdfBytes({
   title = "Chandini Hirers",
   lines,
@@ -199,7 +240,15 @@ export async function generateCartPdfBytes({
   lines: Line[];
   totalItems: number;
   totalAmount: number;
-  customer?: { name: string; phone: string; address: string };
+  customer?: {
+    name?: string;
+    phone?: string;
+    address?: string;
+    eventType?: string;
+    startDateTime?: string;
+    endDateTime?: string;
+    mapUrl?: string;
+  };
 }) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
 
@@ -229,73 +278,113 @@ export async function generateCartPdfBytes({
 
   // ------- image loader -------
   const imageCache = new Map<string, string>();
-  async function getItemImageB64(url: string): Promise<string | null> {
+  async function getItemImageB64(url: string): Promise<{ dataUrl: string; fmt: "JPEG" | "PNG" } | null> {
     const key = url;
-    if (imageCache.has(key)) return imageCache.get(key)!;
+    if (imageCache.has(key)) {
+      const cached = imageCache.get(key)!;
+      return { dataUrl: cached, fmt: cached.startsWith("data:image/png") ? "PNG" : "JPEG" };
+    }
     try {
       const res = await fetch(withBase(url), { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const buf = await res.arrayBuffer();
+
+      // naive detect via file name (fast) — good enough if your catalog files have correct extensions
+      const isPng = /\.png(\?|#|$)/i.test(url);
       const b64 = await toBase64(buf);
-      const dataUrl = `data:image/jpeg;base64,${b64}`;
+      const mime = isPng ? "image/png" : "image/jpeg";
+      const fmt: "PNG" | "JPEG" = isPng ? "PNG" : "JPEG";
+      const dataUrl = `data:${mime};base64,${b64}`;
+
       imageCache.set(key, dataUrl);
-      return dataUrl;
+      return { dataUrl, fmt };
     } catch {
       return null;
     }
   }
+
+  // ...
 
   const drawHeader = () => {
     drawTiledDiagonalWatermark(doc, "chandini hirers");
 
     // Title
     doc.setFontSize(16);
-    try { doc.setFont("DejaVu", "bold"); } catch { doc.setFont("helvetica", "bold"); }
+    try {
+      doc.setFont("DejaVu", "bold");
+    } catch {
+      doc.setFont("helvetica", "bold");
+    }
     doc.text(title, margin, margin + 10);
 
     // Details
     doc.setFontSize(11);
-    try { doc.setFont("DejaVu", "normal"); } catch { doc.setFont("helvetica", "normal"); }
+    try {
+      doc.setFont("DejaVu", "normal");
+    } catch {
+      doc.setFont("helvetica", "normal");
+    }
 
-    const labels = ["Generated:", "Customer:", "Phone:", "Address:"];
+    // We'll render ALL inputs. We'll compute the widest label for alignment.
+    const kv: Array<[label: string, value?: string]> = [
+      ["Generated:", dateStr],
+      ["Customer:", customer?.name || ""],
+      ["Phone:", customer?.phone || ""],
+      ["Event:", customer?.eventType || ""],
+      ["When:", customer?.startDateTime || ""],
+      ["to:", customer?.endDateTime || ""],
+      ["Address:", customer?.address || ""],
+      ["Map:", customer?.mapUrl || ""],
+    ];
+
     const labelPad = 8;
+    const labels = kv.map(([l]) => l);
     const maxLabelW = Math.max(...labels.map((l) => doc.getTextWidth(l)));
     const valueX = margin + maxLabelW + labelPad;
 
     let y = margin + 28;
 
-    // Generated
-    doc.text("Generated:", margin, y);
-    doc.text(dateStr, valueX, y);
-    y += LINE_H;
+    // Render each key/value, with wrapping for Address & Map
+    for (const [label, val] of kv) {
+      doc.text(label, margin, y);
 
-    // Customer
-    if (customer?.name) {
-      doc.text("Customer:", margin, y);
-      doc.text(String(customer.name), valueX, y);
-      y += LINE_H;
-    }
-
-    // Phone
-    if (customer?.phone) {
-      doc.text("Phone:", margin, y);
-      doc.text(String(customer.phone), valueX, y);
-      y += LINE_H;
-    }
-
-    // Address
-    if (customer?.address) {
-      const addrLines = doc.splitTextToSize(String(customer.address), pageWidth - valueX - margin) as string[];
-      doc.text("Address:", margin, y);
-      if (addrLines.length > 0) {
-        doc.text(addrLines[0], valueX, y);
-        for (let i = 1; i < addrLines.length; i++) {
-          y += LINE_H - 2;
-          doc.text(addrLines[i], valueX, y);
+      if (val && val.trim()) {
+        if (label === "Map:") {
+          const url = toLinkableUrl(val);
+          if (url) {
+            // Clickable link text (short and clean)
+            try { doc.setFont("DejaVu", "bold"); } catch { doc.setFont("helvetica", "bold"); }
+            doc.setTextColor(33, 150, 243); // optional: “link blue”; remove if you want default color
+            doc.textWithLink("Open map", valueX, y, { url });
+            doc.setTextColor(0, 0, 0);
+            try { doc.setFont("DejaVu", "normal"); } catch { doc.setFont("helvetica", "normal"); }
+          } else {
+            // Couldn’t make it a link—just print (wrapped) as plain text
+            const wrapped = doc.splitTextToSize(val, pageWidth - valueX - margin) as string[];
+            if (wrapped.length > 0) {
+              doc.text(wrapped[0], valueX, y);
+              for (let i = 1; i < wrapped.length; i++) {
+                y += LINE_H - 2;
+                doc.text(wrapped[i], valueX, y);
+              }
+            }
+          }
+        } else {
+          // Normal wrapped text for other rows
+          const wrapped = doc.splitTextToSize(val, pageWidth - valueX - margin) as string[];
+          if (wrapped.length > 0) {
+            doc.text(wrapped[0], valueX, y);
+            for (let i = 1; i < wrapped.length; i++) {
+              y += LINE_H - 2;
+              doc.text(wrapped[i], valueX, y);
+            }
+          }
         }
       }
-      y += 6;
+
+      y += LINE_H;
     }
+
 
     // Table header
     const thTop = Math.max(y + DETAILS_TABLE_GAP, margin + 70);
@@ -305,7 +394,11 @@ export async function generateCartPdfBytes({
     doc.setFillColor(240, 240, 240);
     doc.rect(thLeft, thTop, thWidth, HEADER_BAR_HEIGHT, "F");
 
-    try { doc.setFont("DejaVu", "bold"); } catch { doc.setFont("helvetica", "bold"); }
+    try {
+      doc.setFont("DejaVu", "bold");
+    } catch {
+      doc.setFont("helvetica", "bold");
+    }
     const thBaseline = thTop + HEADER_TEXT_VOFFSET;
     doc.text("Item", colItemX, thBaseline);
     doc.text("Qty", colQtyX, thBaseline);
@@ -319,7 +412,11 @@ export async function generateCartPdfBytes({
   const textX = margin + IMG_SIZE + 8;
   const nameColumnWidth = colQtyX - textX - 10;
 
-  try { doc.setFont("DejaVu", "normal"); } catch { doc.setFont("helvetica", "normal"); }
+  try {
+    doc.setFont("DejaVu", "normal");
+  } catch {
+    doc.setFont("helvetica", "normal");
+  }
   doc.setFontSize(FONT_SIZE_BODY);
 
   for (const l of lines) {
@@ -327,10 +424,14 @@ export async function generateCartPdfBytes({
       addFooterIcons(doc);
       doc.addPage();
       y = drawHeader();
-      try { doc.setFont("DejaVu", "normal"); } catch { doc.setFont("helvetica", "normal"); }
+      try {
+        doc.setFont("DejaVu", "normal");
+      } catch {
+        doc.setFont("helvetica", "normal");
+      }
       doc.setFontSize(FONT_SIZE_BODY);
     }
-
+    
     const priceStr = formatINR(l.item.price, fontsOk);
     const amountStr = formatINR(l.lineTotal, fontsOk);
     const imgUrl = l.item.previewImage || l.item.imageAssets?.[0] || "/images/placeholder.jpeg";
@@ -345,8 +446,8 @@ export async function generateCartPdfBytes({
     const imgY = rowTop + (rowH - IMG_SIZE) / 2;
     if (imgUrl) {
       try {
-        const b64 = await getItemImageB64(imgUrl);
-        if (b64) doc.addImage(b64, "JPEG", margin, imgY, IMG_SIZE, IMG_SIZE);
+        const img = await getItemImageB64(imgUrl);
+        if (img) doc.addImage(img.dataUrl, img.fmt, margin, imgY, IMG_SIZE, IMG_SIZE);
       } catch { }
     }
 
@@ -367,13 +468,16 @@ export async function generateCartPdfBytes({
   doc.line(margin, y, pageWidth - margin, y);
   y += 24;
 
-  try { doc.setFont("DejaVu", "bold"); } catch { doc.setFont("helvetica", "bold"); }
+  try {
+    doc.setFont("DejaVu", "bold");
+  } catch {
+    doc.setFont("helvetica", "bold");
+  }
   doc.text("Total Items:", pageWidth - 250, y);
   doc.text(String(totalItems), colAmtRight, y, RIGHT);
   y += ROW_MIN_H;
 
-  const totalText =
-    fontsOk ? INR0.format(totalAmount) : "Rs " + Math.round(totalAmount).toLocaleString("en-IN");
+  const totalText = fontsOk ? INR0.format(totalAmount) : "Rs " + Math.round(totalAmount).toLocaleString("en-IN");
   doc.text("Total Amount:", pageWidth - 250, y);
   doc.text(totalText, colAmtRight, y, RIGHT);
 
@@ -382,7 +486,9 @@ export async function generateCartPdfBytes({
 }
 
 /* ===================== Filename builder ====================== */
-function pad2(n: number) { return n < 10 ? `0${n}` : String(n); }
+function pad2(n: number) {
+  return n < 10 ? `0${n}` : String(n);
+}
 
 function sanitizeName(name?: string) {
   const n = (name || "order").trim().toLowerCase();
@@ -400,7 +506,6 @@ export function buildPdfFilename(customerName?: string, d: Date = new Date()) {
   const mm = pad2(d.getMinutes());
   return `${name}-${DD}-${MM}-${YYYY}-${hh}-${mm}.pdf`;
 }
-
 
 /* ===================== Robust Downloader ===================== */
 export function robustDownloadPdf(bytes: ArrayBuffer, filename?: string, customerNameForFallback?: string) {
