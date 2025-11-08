@@ -68,7 +68,16 @@ export default function CustomerFormCard({
   onEdit,
   onDelete,
 }: CustomerFormProps) {
-  const [touched, setTouched] = useState<Record<keyof CustomerForm, boolean>>({} as any);
+  const initialTouched: Record<keyof CustomerForm, boolean> = {
+    name: false,
+    phone: false,
+    eventType: false,
+    startDateTime: false,
+    endDateTime: false,
+    address: false,
+    mapUrl: false,
+  };
+  const [touched, setTouched] = useState<Record<keyof CustomerForm, boolean>>(initialTouched);
   const [autoFillAddress, setAutoFillAddress] = useState(true);
 
   const { valid } = useMemo(() => validateCustomer(value), [value]);
@@ -91,7 +100,7 @@ export default function CustomerFormCard({
         return;
       }
 
-      let working = value.mapUrl;
+      const working = value.mapUrl;
 
       // 1) expand maps.app.goo.gl short links (await safely inside IIFE)
       if (isGoogleShortLink(working)) {
@@ -470,10 +479,11 @@ const minNow = useMemo(() => {
                 name: true,
                 phone: true,
                 eventType: true,
-                orderDateTime: true,
+                startDateTime: true,
+                endDateTime: true,
                 address: true,
                 mapUrl: true,
-              } as any);
+              });
               const check = validateCustomer(value);
               if (check.valid) onSubmit(value);
             }}

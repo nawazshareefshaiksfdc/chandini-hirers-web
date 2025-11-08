@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
-
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 export async function GET(req: NextRequest) {
   const u = req.nextUrl.searchParams.get("u");
   if (!u) {
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
       status: 200,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
-  } catch (e) {
+  } catch {
     return new Response(JSON.stringify({ error: "Unshorten failed" }), {
       status: 500, headers: { "Content-Type": "application/json" },
     });

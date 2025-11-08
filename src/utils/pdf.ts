@@ -186,6 +186,7 @@ function drawTiledDiagonalWatermark(doc: jsPDF, text: string) {
 /* ======================== Footer icons ====================== */
 function addFooterIcons(doc: jsPDF) {
   const pageW = doc.internal.pageSize.getWidth();
+  void pageW;
   const pageH = doc.internal.pageSize.getHeight();
   const margin = 40;
   const centerY = pageH - margin;

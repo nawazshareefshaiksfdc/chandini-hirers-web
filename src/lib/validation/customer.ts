@@ -20,8 +20,10 @@ const name = (v: string) => typeof v === "string" && v.trim().length >= 2;
 const phone = (v: string) => /^\d{10,15}$/.test(v || "");
 const eventType = (v: string) => typeof v === "string" && v.trim().length > 0;
 const address = (v: string) => typeof v === "string" && v.trim().length >= 6;
-const mapUrlOptional = (_v: string) => true;
-
+const mapUrlOptional = (v: string) => {
+  void v;
+  return true;
+};
 /** UPDATED: time validators — allow "now" (current minute) as valid, disallow only past */
 const startDateTime = (v: string) => {
   const d = parseLocal(v);
@@ -66,15 +68,17 @@ export function validateCustomer(f: CustomerForm) {
 }
 
 /** optional: coerce */
-export function coerceCustomerForm(raw: any): CustomerForm {
+export function coerceCustomerForm(raw: unknown): CustomerForm {
+  const r = (raw ?? {}) as Partial<Record<keyof CustomerForm, unknown>>;
+  const s = (x: unknown) => (x == null ? "" : String(x));
   return {
-    name: (raw?.name ?? "").toString(),
-    phone: (raw?.phone ?? "").toString(),
-    eventType: (raw?.eventType ?? "").toString(),
-    startDateTime: (raw?.startDateTime ?? "").toString(),
-    endDateTime: (raw?.endDateTime ?? "").toString(),
-    address: (raw?.address ?? "").toString(),
-    mapUrl: (raw?.mapUrl ?? "").toString(),
+    name: s(r.name),
+    phone: s(r.phone),
+    eventType: s(r.eventType),
+    startDateTime: s(r.startDateTime),
+    endDateTime: s(r.endDateTime),
+    address: s(r.address),
+    mapUrl: s(r.mapUrl),
   };
 }
 

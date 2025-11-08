@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 const isLatLng = (s: string) => /^\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*$/.test(s);
-
 export async function GET(req: NextRequest) {
   const location = req.nextUrl.searchParams.get("location");
   const apiKey = process.env.GOOGLE_API_KEY;
