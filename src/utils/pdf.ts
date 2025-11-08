@@ -278,35 +278,29 @@ export async function generateCartPdfBytes({
 
   // ------- image loader -------
   const imageCache = new Map<string, string>();
-  async function getItemImageB64(url: string): Promise<string | null> {
+  async function getItemImageB64(url: string): Promise<{ dataUrl: string; fmt: "JPEG" | "PNG" } | null> {
     const key = url;
-    if (imageCache.has(key)) return imageCache.get(key)!;
+    if (imageCache.has(key)) {
+      const cached = imageCache.get(key)!;
+      return { dataUrl: cached, fmt: cached.startsWith("data:image/png") ? "PNG" : "JPEG" };
+    }
     try {
       const res = await fetch(withBase(url), { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const buf = await res.arrayBuffer();
+
+      // naive detect via file name (fast) — good enough if your catalog files have correct extensions
+      const isPng = /\.png(\?|#|$)/i.test(url);
       const b64 = await toBase64(buf);
-      const dataUrl = `data:image/jpeg;base64,${b64}`;
+      const mime = isPng ? "image/png" : "image/jpeg";
+      const fmt: "PNG" | "JPEG" = isPng ? "PNG" : "JPEG";
+      const dataUrl = `data:${mime};base64,${b64}`;
+
       imageCache.set(key, dataUrl);
-      return dataUrl;
+      return { dataUrl, fmt };
     } catch {
       return null;
     }
-  }
-
-  function fmtLocal(dt?: string): string {
-    if (!dt) return "";
-    // show: 06 Nov 2025, 19:30
-    const d = new Date(dt.replace("T", " ") + ":00");
-    if (isNaN(d.getTime())) return dt;
-    return d.toLocaleString(undefined, {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
   }
 
   // ...
@@ -437,7 +431,7 @@ export async function generateCartPdfBytes({
       }
       doc.setFontSize(FONT_SIZE_BODY);
     }
-
+    
     const priceStr = formatINR(l.item.price, fontsOk);
     const amountStr = formatINR(l.lineTotal, fontsOk);
     const imgUrl = l.item.previewImage || l.item.imageAssets?.[0] || "/images/placeholder.jpeg";
@@ -452,8 +446,8 @@ export async function generateCartPdfBytes({
     const imgY = rowTop + (rowH - IMG_SIZE) / 2;
     if (imgUrl) {
       try {
-        const b64 = await getItemImageB64(imgUrl);
-        if (b64) doc.addImage(b64, "JPEG", margin, imgY, IMG_SIZE, IMG_SIZE);
+        const img = await getItemImageB64(imgUrl);
+        if (img) doc.addImage(img.dataUrl, img.fmt, margin, imgY, IMG_SIZE, IMG_SIZE);
       } catch { }
     }
 

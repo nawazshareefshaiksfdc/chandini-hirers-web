@@ -21,7 +21,7 @@ const PUBLIC_MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 /* ============ Client-only helpers ============ */
 /** No server in static Pages, so we can't truly unshorten safely. */
 async function clientUnshortenNoop(_u: string): Promise<string | null> {
-  // Without a server, we just return null to keep behavior graceful.
+  void _u; // silence @typescript-eslint/no-unused-vars (we can't actually unshorten client-side)
   return null;
 }
 
