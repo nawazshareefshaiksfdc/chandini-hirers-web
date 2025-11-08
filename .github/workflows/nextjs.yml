@@ -47,7 +47,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
-          static_site_generator: next   # ✅ lets GH auto-inject basePath & unoptimized images
+          static_site_generator: next  # GitHub Pages + Next.js
 
       - name: Restore cache
         uses: actions/cache@v4
@@ -60,12 +60,22 @@ jobs:
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
 
-      # 👇 Add this so your client-side code can also read NEXT_PUBLIC_BASE_PATH
-      - name: Set base path env for client
+      # Base path for GitHub Pages (e.g., /chandini-hirers-web)
+      - name: Set base path env
         run: echo "NEXT_PUBLIC_BASE_PATH=/${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
 
-      - name: Build with Next.js
-        run: ${{ steps.detect-package-manager.outputs.runner }} next build
+      # Public/browser key + server key (if you use it during build ONLY).
+      # Add these in repo settings → Secrets and variables → Actions.
+      - name: Set Google API env
+        run: |
+          echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}" >> $GITHUB_ENV
+          echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> $GITHUB_ENV
+
+      # Build and static export to ./out (Pages needs a folder to upload)
+      - name: Build & Export
+        run: |
+          ${{ steps.detect-package-manager.outputs.runner }} next build
+          ${{ steps.detect-package-manager.outputs.runner }} next export -o out
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
