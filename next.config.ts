@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
   output: "export",
   images: { unoptimized: true },
   basePath: base || undefined,
-  assetPrefix: base || undefined,
 };
 
 export default nextConfig;

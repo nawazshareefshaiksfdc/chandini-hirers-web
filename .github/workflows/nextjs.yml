@@ -47,7 +47,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
-          static_site_generator: next  # GitHub Pages + Next.js
+          static_site_generator: next
 
       - name: Restore cache
         uses: actions/cache@v4
@@ -60,22 +60,16 @@ jobs:
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
 
-      # Base path for GitHub Pages (e.g., /chandini-hirers-web)
       - name: Set base path env
         run: echo "NEXT_PUBLIC_BASE_PATH=/${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
 
-      # Public/browser key + server key (if you use it during build ONLY).
-      # Add these in repo settings → Secrets and variables → Actions.
       - name: Set Google API env
         run: |
           echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}" >> $GITHUB_ENV
           echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> $GITHUB_ENV
 
-      # Build and static export (Next 15 writes to ./out automatically)
-      - name: Build & Export
-        run: |
-          ${{ steps.detect-package-manager.outputs.runner }} next build
-          ${{ steps.detect-package-manager.outputs.runner }} next export
+      - name: Build (static export)
+        run: ${{ steps.detect-package-manager.outputs.runner }} next build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
