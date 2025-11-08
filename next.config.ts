@@ -4,10 +4,8 @@ import type { NextConfig } from "next";
 const base = process.env.NEXT_PUBLIC_BASE_PATH || ""; // e.g. "/chandini-hirers-web"
 
 const nextConfig: NextConfig = {
-  images: { unoptimized: true },
-  // These make all static assets resolve under your repo path
-  basePath: base || undefined,
-  assetPrefix: base || undefined,
+  images: { unoptimized: true },         
+  basePath: base || undefined,          
 };
 
 export default nextConfig;
