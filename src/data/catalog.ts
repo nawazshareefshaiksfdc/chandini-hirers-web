@@ -100,7 +100,7 @@ export const kCatalog: Item[] = [
   
   // ─────────────────────────── Tables & Stage ───────────────────────────
   { id: "tss1", name: "Single Stall Set", imageAssets: ["./images/TablesStalls&Stage/SingleStall1.jpeg","./images/TablesStalls&Stage/SingleStall2.jpeg"], price: 399, category: Categories.tablesAndStage },
-  { id: "tss2", name: "Double Stall Set", imageAssets: ["./images/TablesStalls&Stage/DoubleStall.jpeg"], price: 799, category: Categories.tablesAndStage },
+  { id: "tss2", name: "Double Stall Set", imageAssets: ["./images/TablesStalls&Stage/DoubleStall.jpg"], price: 799, category: Categories.tablesAndStage },
   { id: "tss3", name: "Dining Table", imageAssets: ["./images/TablesStalls&Stage/dinningTable.jpeg"], price: 50, category: Categories.tablesAndStage },
   { id: "tss4", name: "Table with Cloth", imageAssets: ["./images/TablesStalls&Stage/TableWithCloth.jpeg"], price: 150, category: Categories.tablesAndStage },
   { id: "tss5", name: "Round Table", imageAssets: ["./images/TablesStalls&Stage/RoundTable1.jpg","./images/TablesStalls&Stage/RoundTable2.jpg"], price: 299, category: Categories.tablesAndStage },
