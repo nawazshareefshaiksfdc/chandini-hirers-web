@@ -96,8 +96,9 @@ export const kCatalog: Item[] = [
   { id: "cs10", name: "Single Raja Chair", imageAssets: ["./images/Chairs&Sofas/Maharaja.jpg"], price: 800, category: Categories.chairsAndSofas },
   { id: "cs11", name: "Single white Raja", imageAssets: ["./images/Chairs&Sofas/SingleRajaChair.jpeg"], price: 1000, category: Categories.chairsAndSofas },
   { id: "cs12", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Sofa2.jpg"], price: 1000, category: Categories.chairsAndSofas },
-  { id: "cs13", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Sofa.png","./images/Chairs&Sofas/Sofa1.jpg"], price: 1500, category: Categories.chairsAndSofas },
-  
+  { id: "cs13", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Sofa1.jpg"], price: 1500, category: Categories.chairsAndSofas },
+    { id: "cs13", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Sofa3.jpg"], price: 1500, category: Categories.chairsAndSofas },
+
   // ─────────────────────────── Tables & Stage ───────────────────────────
   { id: "tss1", name: "Single Stall Set", imageAssets: ["./images/TablesStalls&Stage/SingleStall1.jpeg","./images/TablesStalls&Stage/SingleStall2.jpg"], price: 399, category: Categories.tablesAndStage },
   { id: "tss2", name: "Double Stall Set", imageAssets: ["./images/TablesStalls&Stage/DoubleStall.jpeg"], price: 799, category: Categories.tablesAndStage },
