@@ -116,7 +116,7 @@ export const kCatalog: Item[] = [
 
   // ─────────────────────────── Floor Carpets ───────────────────────────
   { id: "fc1", name: "15x6 Green Mat", imageAssets: ["./images/Floor Carpets/Greenmat.jpg"], price: 250, category: Categories.floorCarpets },
-  { id: "fc2", name: "30x6 Green Mat", imageAssets: ["./images/Floor Carpets/Greenmat.jpg"], price: 250, category: Categories.floorCarpets },
+  { id: "fc2", name: "30x6 Green Mat", imageAssets: ["./images/Floor Carpets/Greenmat.jpg"], price: 500, category: Categories.floorCarpets },
   { id: "fc3", name: "12x6 Jamkanam", imageAssets: ["./images/Floor Carpets/Jamkanam.jpg"], price: 100, category: Categories.floorCarpets },
   { id: "fc4", name: "12x9 Tiwachi", imageAssets: ["./images/Floor Carpets/Tiwachi.jpg"], price: 500, category: Categories.floorCarpets },
 
@@ -133,7 +133,7 @@ export const kCatalog: Item[] = [
   { id: "spi5", name: "Water Drum", imageAssets: ["./images/SpecialItems/WaterDrum.jpg"], price: 100, category: Categories.specialItems },
   { id: "spi6", name: "Dust Bin", imageAssets: ["./images/SpecialItems/Dustbin.jpg"], price: 100, category: Categories.specialItems },
   { id: "spi7", name: "Haldi Set", imageAssets: ["./images/SpecialItems/HaldiSet.jpg"], price: 2500, category: Categories.specialItems },
-  { id: "spi8", name: "Teapoy", imageAssets: ["./images/SpecialItems/TeaPoy.jpg"], price: 100, category: Categories.specialItems },
+  { id: "spi8", name: "Teapoy", imageAssets: ["./images/SpecialItems/TeaPoy.jpg","./images/SpecialItems/TeaPoy2.jpeg"], price: 100, category: Categories.specialItems },
 
   // ─────────────────────────── Lightings ───────────────────────────
  { id: "L1", name: "Lamp", imageAssets: ["./images/Lighting/Lamp.jpg"], price: 300, category: Categories.lightings },
