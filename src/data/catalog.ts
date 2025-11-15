@@ -133,7 +133,7 @@ export const kCatalog: Item[] = [
   { id: "spi5", name: "Water Drum", imageAssets: ["./images/SpecialItems/WaterDrum.jpg"], price: 100, category: Categories.specialItems },
   { id: "spi6", name: "Dust Bin", imageAssets: ["./images/SpecialItems/Dustbin.jpg"], price: 100, category: Categories.specialItems },
   { id: "spi7", name: "Haldi Set", imageAssets: ["./images/SpecialItems/HaldiSet.jpg"], price: 2500, category: Categories.specialItems },
-  { id: "spi8", name: "Teapoy", imageAssets: ["./images/SpecialItems/TeaPoy.jpg","./images/SpecialItems/TeaPoy2.jpeg"], price: 100, category: Categories.specialItems },
+  { id: "spi8", name: "Teapoy", imageAssets: ["./images/SpecialItems/TeaPoy.jpg","./images/SpecialItems/TeaPoy2.jpg"], price: 100, category: Categories.specialItems },
 
   // ─────────────────────────── Lightings ───────────────────────────
  { id: "L1", name: "Lamp", imageAssets: ["./images/Lighting/Lamp.jpg"], price: 300, category: Categories.lightings },
