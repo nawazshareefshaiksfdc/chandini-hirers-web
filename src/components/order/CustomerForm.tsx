@@ -18,16 +18,19 @@ import { RefreshCcw, LocateFixed, X, Pen, Trash2 } from "lucide-react";
 // ❗ Use a REFERRER-restricted browser key only:
 const PUBLIC_MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
+/* ✅ Fixed country code for India */
+const PHONE_CC = "91"; // stored as: 91XXXXXXXXXX (digits only)
+
 /* ============ Client-only helpers ============ */
 /** No server in static Pages, so we can't truly unshorten safely. */
 async function clientUnshortenNoop(_u: string): Promise<string | null> {
-  void _u; // silence @typescript-eslint/no-unused-vars (we can't actually unshorten client-side)
+  void _u;
   return null;
 }
 
 /** Optional client-side geocode (only if a safe NEXT_PUBLIC key is provided). */
 async function clientGeocodeOptional(location: string): Promise<string | null> {
-  if (!PUBLIC_MAPS_KEY) return null; // no browser key → skip
+  if (!PUBLIC_MAPS_KEY) return null;
   try {
     const url =
       `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${PUBLIC_MAPS_KEY}`;
@@ -84,7 +87,9 @@ export default function CustomerFormCard({
     address: false,
     mapUrl: false,
   };
-  const [touched, setTouched] = useState<Record<keyof CustomerForm, boolean>>(initialTouched);
+
+  const [touched, setTouched] =
+    useState<Record<keyof CustomerForm, boolean>>(initialTouched);
   const [autoFillAddress, setAutoFillAddress] = useState(true);
 
   const { valid } = useMemo(() => validateCustomer(value), [value]);
@@ -92,6 +97,16 @@ export default function CustomerFormCard({
   const [mapEmbed, setMapEmbed] = useState<string | null>(null);
   const [isShortMap, setIsShortMap] = useState(false);
   const [lastGuess, setLastGuess] = useState<string | null>(null);
+
+  // ✅ local-part for UI (10 digits). Stored value remains digits-only with CC: "91" + local
+  const phoneLocal = useMemo(() => {
+    const raw = (value.phone ?? "").replace(/[^\d]/g, "");
+    if (!raw) return "";
+    return raw.startsWith(PHONE_CC) ? raw.slice(PHONE_CC.length) : raw;
+  }, [value.phone]);
+
+  const setField = <K extends keyof CustomerForm>(key: K, v: CustomerForm[K]) =>
+    onChange({ ...value, [key]: v });
 
   // ---- Map input normalization / preview / autofill ----
   useEffect(() => {
@@ -184,9 +199,6 @@ export default function CustomerFormCard({
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }, []);
 
-  const setField = <K extends keyof CustomerForm>(key: K, v: CustomerForm[K]) =>
-    onChange({ ...value, [key]: v });
-
   // ---- Toolbar actions (outside the input) ----
   const handleSyncAddress = async () => {
     const latLng = mapEmbed ? extractLatLngFromEmbed(mapEmbed) : null;
@@ -270,19 +282,69 @@ export default function CustomerFormCard({
           onClear={() => setField("name", "")}
         />
 
-        <InputField
-          label="WhatsApp Phone (with country code, numbers only)"
-          placeholder="e.g., 9198XXXXXXXX"
-          value={value.phone}
-          disabled={!editing}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setField("phone", e.target.value.replace(/[^\d]/g, ""))
-          }
-          onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
-          invalid={!!touched.phone && !validators.phone(value.phone)}
-          hint="10–15 digits with country code."
-          onClear={() => setField("phone", "")}
-        />
+        {/* ✅ Phone with fixed +91 prefix (UI) and digits-only storage (value.phone) */}
+        <div className="flex flex-col">
+          <label className="text-xs text-gray-400 mb-1">
+            WhatsApp Phone (India)
+          </label>
+
+          <div className="relative">
+            <div className="flex">
+              <div
+                className="px-3 py-2 rounded-l-md border border-gray-700 bg-[#0c1323] text-gray-200 text-sm flex items-center"
+              >
+                +91
+              </div>
+
+              <input
+                className={
+                  // same style as other fields, but remove left radius & add space for clear button
+                  uiFieldClass(!!touched.phone && !validators.phone(value.phone), !(!editing)) +
+                  " rounded-l-none pr-10"
+                }
+                placeholder="e.g., 98XXXXXXXX"
+                value={phoneLocal}
+                disabled={!editing}
+                inputMode="numeric"
+                autoComplete="tel-national"
+                maxLength={10}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  // user types only local digits
+                  let digits = e.target.value.replace(/[^\d]/g, "");
+
+                  // if user pastes 91xxxxxxxxxx into local box, normalize it
+                  if (digits.startsWith(PHONE_CC)) digits = digits.slice(PHONE_CC.length);
+
+                  // keep max 10 local digits
+                  digits = digits.slice(0, 10);
+
+                  // store full digits-only with CC
+                  setField("phone", digits ? (PHONE_CC + digits) : "");
+                }}
+                onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
+              />
+
+              {/* ✅ show clear only when local part has digits */}
+              {editing && phoneLocal.trim().length > 0 && (
+                <button
+                  type="button"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[#1b2340]"
+                  onClick={() => setField("phone", "")}
+                  aria-label="Clear"
+                  title="Clear"
+                >
+                  <X className="w-4 h-4 text-gray-300" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {touched.phone && !validators.phone(value.phone) && (
+            <p className="mt-1 text-[11px] text-amber-300">
+              Enter a valid number (stored as 91XXXXXXXXXX).
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Row 2 */}
@@ -316,6 +378,7 @@ export default function CustomerFormCard({
             const s = new Date(nextStart.replace("T", " ") + ":00");
             const eDate = value.endDateTime ? new Date(value.endDateTime.replace("T", " ") + ":00") : null;
             let nextEnd = value.endDateTime;
+
             if (s.toString() !== "Invalid Date") {
               if (!eDate || eDate.getTime() <= s.getTime()) {
                 const tmp = new Date(s.getTime() + 60 * 60 * 1000);
@@ -380,16 +443,17 @@ export default function CustomerFormCard({
             />
 
             <div className="flex items-center gap-1">
-              <button
-                type="button"
-                title="Clear map"
-                aria-label="Clear map"
-                onClick={clearMapUrl}
-                disabled={!editing || !value.mapUrl}
-                className="px-2 py-1.5 rounded-md border border-gray-700 text-gray-300 hover:bg-[#1b2340] disabled:opacity-40"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              {editing && value.mapUrl?.trim() ? (
+                <button
+                  type="button"
+                  title="Clear map"
+                  aria-label="Clear map"
+                  onClick={clearMapUrl}
+                  className="px-2 py-1.5 rounded-md border border-gray-700 text-gray-300 hover:bg-[#1b2340]"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              ) : null}
 
               <button
                 type="button"
