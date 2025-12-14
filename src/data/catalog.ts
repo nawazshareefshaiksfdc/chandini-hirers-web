@@ -34,20 +34,20 @@ export const ALL_CATEGORIES = [
 export const kCatalog: Item[] = [
   // ─────────────────────────── Shamiyanas ───────────────────────────
   { id: "sha1", name: "12x9 Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], previewImage: "./images/shamiyana1.jpg", price: 599, category: Categories.shamiyanas },
-  { id: "sha2", name: "12x12 Shamiyana", imageAssets: ["./images/shamiyana2.jpg"], price: 599, category: Categories.shamiyanas },
-  { id: "sha3", name: "15x12 Shamiyana", imageAssets: ["./images/shamiyana3.jpg"], price: 599, category: Categories.shamiyanas },
+  { id: "sha2", name: "12x12 Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 599, category: Categories.shamiyanas },
+  { id: "sha3", name: "15x12 Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 599, category: Categories.shamiyanas },
   { id: "sha4", name: "18x9 Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 799, category: Categories.shamiyanas },
-  { id: "sha5", name: "18x12 Shamiyana", imageAssets: ["./images/shamiyana2.jpg"], price: 899, category: Categories.shamiyanas },
-  { id: "sha6", name: "24x12 Shamiyana", imageAssets: ["./images/shamiyana3.jpg"], price: 999, category: Categories.shamiyanas },
+  { id: "sha5", name: "18x12 Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 899, category: Categories.shamiyanas },
+  { id: "sha6", name: "24x12 Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 999, category: Categories.shamiyanas },
   { id: "sha7", name: "30x15 Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 1199, category: Categories.shamiyanas },
-  { id: "sha8", name: "36x18 Shamiyana", imageAssets: ["./images/shamiyana2.jpg"], price: 1399, category: Categories.shamiyanas },
-  { id: "sha9", name: "30x30 Jumbo Shamiyana", imageAssets: ["./images/shamiyana3.jpg"], price: 2999, category: Categories.shamiyanas },
+  { id: "sha8", name: "36x18 Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 1399, category: Categories.shamiyanas },
+  { id: "sha9", name: "30x30 Jumbo Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 2999, category: Categories.shamiyanas },
   { id: "sha10", name: "36x36 Jumbo Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 3999, category: Categories.shamiyanas },
-  { id: "sha11", name: "24x12 Waterproof Shamiyana", imageAssets: ["./images/shamiyana2.jpg"], price: 1999, category: Categories.shamiyanas },
-  { id: "sha12", name: "24x18 Waterproof Shamiyana", imageAssets: ["./images/shamiyana3.jpg"], price: 2499, category: Categories.shamiyanas },
+  { id: "sha11", name: "24x12 Waterproof Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 1999, category: Categories.shamiyanas },
+  { id: "sha12", name: "24x18 Waterproof Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 2499, category: Categories.shamiyanas },
   { id: "sha13", name: "30x15 Waterproof Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 2999, category: Categories.shamiyanas },
-  { id: "sha14", name: "36x18 Waterproof Shamiyana", imageAssets: ["./images/shamiyana2.jpg"], price: 3500, category: Categories.shamiyanas },
-  { id: "sha15", name: "30x30 Waterproof Shamiyana", imageAssets: ["./images/shamiyana3.jpg"], price: 3999, category: Categories.shamiyanas },
+  { id: "sha14", name: "36x18 Waterproof Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 3500, category: Categories.shamiyanas },
+  { id: "sha15", name: "30x30 Waterproof Shamiyana", imageAssets: ["./images/shamiyana1.jpg"], price: 3999, category: Categories.shamiyanas },
 
   // ─────────────────────────── Pandiri ───────────────────────────
   { id: "pan1", name: "12x12 Pandiri", imageAssets: ["./images/Pandiri/whiteceiling.jpg"], price: 1199, category: Categories.pandiri },
@@ -96,8 +96,9 @@ export const kCatalog: Item[] = [
   { id: "cs10", name: "Single Raja Chair", imageAssets: ["./images/Chairs&Sofas/Maharaja.jpg"], price: 800, category: Categories.chairsAndSofas },
   { id: "cs11", name: "Single white Raja", imageAssets: ["./images/Chairs&Sofas/SingleRajaChair.jpeg"], price: 1000, category: Categories.chairsAndSofas },
   { id: "cs12", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Sofa2.jpg"], price: 1000, category: Categories.chairsAndSofas },
-  { id: "cs13", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Sofa.png","./images/Chairs&Sofas/Sofa1.jpg"], price: 1500, category: Categories.chairsAndSofas },
-  
+  { id: "cs13", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Sofa1.jpg"], price: 1500, category: Categories.chairsAndSofas },
+    { id: "cs13", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Sofa3.jpg"], price: 1500, category: Categories.chairsAndSofas },
+
   // ─────────────────────────── Tables & Stage ───────────────────────────
   { id: "tss1", name: "Single Stall Set", imageAssets: ["./images/TablesStalls&Stage/SingleStall1.jpeg","./images/TablesStalls&Stage/SingleStall2.jpg"], price: 399, category: Categories.tablesAndStage },
   { id: "tss2", name: "Double Stall Set", imageAssets: ["./images/TablesStalls&Stage/DoubleStall.jpeg"], price: 799, category: Categories.tablesAndStage },
@@ -116,7 +117,7 @@ export const kCatalog: Item[] = [
 
   // ─────────────────────────── Floor Carpets ───────────────────────────
   { id: "fc1", name: "15x6 Green Mat", imageAssets: ["./images/Floor Carpets/Greenmat.jpg"], price: 250, category: Categories.floorCarpets },
-  { id: "fc2", name: "30x6 Green Mat", imageAssets: ["./images/Floor Carpets/Greenmat.jpg"], price: 250, category: Categories.floorCarpets },
+  { id: "fc2", name: "30x6 Green Mat", imageAssets: ["./images/Floor Carpets/Greenmat.jpg"], price: 500, category: Categories.floorCarpets },
   { id: "fc3", name: "12x6 Jamkanam", imageAssets: ["./images/Floor Carpets/Jamkanam.jpg"], price: 100, category: Categories.floorCarpets },
   { id: "fc4", name: "12x9 Tiwachi", imageAssets: ["./images/Floor Carpets/Tiwachi.jpg"], price: 500, category: Categories.floorCarpets },
 
@@ -133,7 +134,7 @@ export const kCatalog: Item[] = [
   { id: "spi5", name: "Water Drum", imageAssets: ["./images/SpecialItems/WaterDrum.jpg"], price: 100, category: Categories.specialItems },
   { id: "spi6", name: "Dust Bin", imageAssets: ["./images/SpecialItems/Dustbin.jpg"], price: 100, category: Categories.specialItems },
   { id: "spi7", name: "Haldi Set", imageAssets: ["./images/SpecialItems/HaldiSet.jpg"], price: 2500, category: Categories.specialItems },
-  { id: "spi8", name: "Teapoy", imageAssets: ["./images/SpecialItems/TeaPoy.jpg"], price: 100, category: Categories.specialItems },
+  { id: "spi8", name: "Teapoy", imageAssets: ["./images/SpecialItems/TeaPoy.jpg","./images/SpecialItems/Teapoy2.jpg"], price: 100, category: Categories.specialItems },
 
   // ─────────────────────────── Lightings ───────────────────────────
  { id: "L1", name: "Lamp", imageAssets: ["./images/Lighting/Lamp.jpg"], price: 300, category: Categories.lightings },
