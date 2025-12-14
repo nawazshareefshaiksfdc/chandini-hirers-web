@@ -425,7 +425,7 @@ export default function CustomerFormCard({
 
             if (s.toString() !== "Invalid Date") {
               if (!eDate || eDate.getTime() <= s.getTime()) {
-                const tmp = new Date(s.getTime() + 60 * 60 * 1000);
+                const tmp = new Date(s.getTime() + 24 * 60 * 60 * 1000);
                 const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
                 nextEnd = `${tmp.getFullYear()}-${pad(
                   tmp.getMonth() + 1
