@@ -17,7 +17,11 @@ import {
 } from "@/utils/pdf";
 import CustomerFormCard from "@/components/order/CustomerForm";
 import type { CustomerForm } from "@/types/order";
-import { emptyCustomerForm, coerceCustomerForm, validateCustomer } from "@/lib/validation/customer";
+import {
+  emptyCustomerForm,
+  coerceCustomerForm,
+  validateCustomer,
+} from "@/lib/validation/customer";
 
 const QtyStepper = dynamic(() => import("@/components/QtyStepper"), { ssr: false });
 
@@ -26,7 +30,6 @@ const LOCAL_SUBMITTED_KEY = "chandini.order.customer.submitted.v2";
 const LOCAL_FORM_SHOW_KEY = "chandini.order.customer.show.v2";
 
 /* ------- smooth scroll ------- */
-
 function easeInOutCubic(t: number) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
@@ -46,6 +49,28 @@ function smoothScrollToY(targetY: number, duration = 500) {
   } catch {
     window.scrollTo(0, targetY);
   }
+}
+
+/* ✅ EXACT format: "14 DEC 2025 4: 20 PM" */
+function formatChandiniDateTime(input?: string | Date | null) {
+  if (!input) return "";
+  const d = input instanceof Date ? input : new Date(input);
+
+  // if parsing fails, return original string so you can debug
+  if (Number.isNaN(d.getTime())) return typeof input === "string" ? input : "";
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const mon = d.toLocaleString("en-US", { month: "short" }).toUpperCase();
+  const year = d.getFullYear();
+
+  let hrs = d.getHours();
+  const mins = String(d.getMinutes()).padStart(2, "0");
+  const ampm = hrs >= 12 ? "PM" : "AM";
+  hrs = hrs % 12;
+  if (hrs === 0) hrs = 12;
+
+  // ✅ space after ":" and AM/PM in caps
+  return `${day} ${mon} ${year} ${hrs}: ${mins} ${ampm}`;
 }
 
 export default function PreviewPage() {
@@ -123,6 +148,7 @@ export default function PreviewPage() {
       localStorage.setItem(LOCAL_FORM_KEY, JSON.stringify(form));
     } catch {}
   }, [form, bootstrapped]);
+
   useEffect(() => {
     if (!bootstrapped) return;
     try {
@@ -141,13 +167,20 @@ export default function PreviewPage() {
       smoothScrollToY(top, 600);
     }
   }, [showPreview, pdfUrl]);
-  
+
+  const revokePrevPdfUrl = () => {
+    if (pdfObjectUrlRef.current) {
+      URL.revokeObjectURL(pdfObjectUrlRef.current);
+      pdfObjectUrlRef.current = null;
+    }
+  };
+
   function handleDelete() {
     if (!confirm("Delete this form? This cannot be undone.")) return;
     try {
       localStorage.removeItem(LOCAL_FORM_KEY);
       localStorage.removeItem(LOCAL_SUBMITTED_KEY);
-      localStorage.setItem(LOCAL_FORM_SHOW_KEY, "true"); // keep the form visible to refill
+      localStorage.setItem(LOCAL_FORM_SHOW_KEY, "true");
     } catch {}
     setForm(emptyCustomerForm);
     setFormSubmitted(false);
@@ -158,41 +191,49 @@ export default function PreviewPage() {
     setShowPreview(false);
   }
 
-  // PDF invalidation signature (include all customer inputs so preview rebuilds)
-  const pdfSignature = useMemo(
-  () =>
-    JSON.stringify({
-      customer: {
-        name: form.name,
-        phone: form.phone,
-        address: form.address,
-        eventType: form.eventType,
-        startDateTime: form.startDateTime,
-        endDateTime: form.endDateTime,
-        mapUrl: form.mapUrl,
-      },
-      totals: { items: cart.totalItems, amount: cart.totalAmount },
-      lines: lines.map((l) => ({
-        id: l.item.id,
-        qty: l.qty,
-        lineTotal: l.lineTotal,
-        img: l.item.previewImage || l.item.imageAssets?.[0] || "/images/placeholder.jpeg",
-      })),
-    }),
-  [
-    form.name,
-    form.phone,
-    form.address,
-    form.eventType,
-    form.startDateTime,
-    form.endDateTime,
-    form.mapUrl,
-    cart.totalItems,
-    cart.totalAmount,
-    lines,
-  ]
-);
+  // ✅ formatted dates from DATA (not "now")
+  const prettyStart = useMemo(() => formatChandiniDateTime(form.startDateTime), [form.startDateTime]);
+  const prettyEnd = useMemo(() => formatChandiniDateTime(form.endDateTime), [form.endDateTime]);
 
+  const whenText = useMemo(() => {
+    if (prettyStart && prettyEnd) return `${prettyStart} to ${prettyEnd}`;
+    return prettyStart || prettyEnd || "";
+  }, [prettyStart, prettyEnd]);
+
+  // PDF invalidation signature
+  const pdfSignature = useMemo(
+    () =>
+      JSON.stringify({
+        customer: {
+          name: form.name,
+          phone: form.phone,
+          address: form.address,
+          eventType: form.eventType,
+          startDateTime: form.startDateTime,
+          endDateTime: form.endDateTime,
+          mapUrl: form.mapUrl,
+        },
+        totals: { items: cart.totalItems, amount: cart.totalAmount },
+        lines: lines.map((l) => ({
+          id: l.item.id,
+          qty: l.qty,
+          lineTotal: l.lineTotal,
+          img: l.item.previewImage || l.item.imageAssets?.[0] || "/images/placeholder.jpeg",
+        })),
+      }),
+    [
+      form.name,
+      form.phone,
+      form.address,
+      form.eventType,
+      form.startDateTime,
+      form.endDateTime,
+      form.mapUrl,
+      cart.totalItems,
+      cart.totalAmount,
+      lines,
+    ]
+  );
 
   // Rebuild preview when signature changes
   useEffect(() => {
@@ -201,19 +242,20 @@ export default function PreviewPage() {
     if (showPreview && lines.length > 0) {
       (async () => {
         const bytes = await generateCartPdfBytes({
-  lines,
-  totalItems: cart.totalItems,
-  totalAmount: cart.totalAmount,
-  customer: {
-    name: form.name.trim(),
-    phone: form.phone.trim(),
-    address: form.address.trim(),
-    eventType: form.eventType || "",
-    startDateTime: form.startDateTime || "",
-    endDateTime: form.endDateTime || "",
-    mapUrl: form.mapUrl || "",
-  },
-});
+          lines,
+          totalItems: cart.totalItems,
+          totalAmount: cart.totalAmount,
+          customer: {
+            name: form.name.trim(),
+            phone: form.phone.trim(),
+            address: form.address.trim(),
+            eventType: form.eventType || "",
+            // ✅ PASS FORMATTED STRINGS
+            startDateTime: prettyStart || "",
+            endDateTime: prettyEnd || "",
+            mapUrl: form.mapUrl || "",
+          },
+        });
 
         const blob = new Blob([bytes], { type: "application/pdf" });
         const url = URL.createObjectURL(blob);
@@ -224,19 +266,12 @@ export default function PreviewPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pdfSignature]);
 
-  const revokePrevPdfUrl = () => {
-    if (pdfObjectUrlRef.current) {
-      URL.revokeObjectURL(pdfObjectUrlRef.current);
-      pdfObjectUrlRef.current = null;
-    }
-  };
-
   const { valid: formValid } = useMemo(() => validateCustomer(form), [form]);
 
   const ensurePdfAndTogglePreview = async () => {
     if (lines.length === 0) return;
+
     if (!formValid) {
-      if (!showForm) setShowForm(true);
       setTimeout(() => {
         const y =
           (formRef.current?.getBoundingClientRect().top || 0) +
@@ -246,14 +281,17 @@ export default function PreviewPage() {
       }, 0);
       return;
     }
+
     if (showPreview) {
       setShowPreview(false);
       const targetY = prevScrollYRef.current || 0;
       requestAnimationFrame(() => smoothScrollToY(targetY, 550));
       return;
     }
+
     prevScrollYRef.current = window.scrollY || window.pageYOffset || 0;
     pendingScrollToPreviewRef.current = true;
+
     if (!pdfUrl) {
       const bytes = await generateCartPdfBytes({
         lines,
@@ -264,8 +302,9 @@ export default function PreviewPage() {
           phone: form.phone.trim(),
           address: form.address.trim(),
           eventType: form.eventType || "",
-          startDateTime: form.startDateTime || "",
-          endDateTime: form.endDateTime || "",
+          // ✅ PASS FORMATTED STRINGS
+          startDateTime: prettyStart || "",
+          endDateTime: prettyEnd || "",
           mapUrl: form.mapUrl || "",
         },
       });
@@ -275,13 +314,14 @@ export default function PreviewPage() {
       pdfObjectUrlRef.current = url;
       setPdfUrl(url);
     }
+
     setShowPreview(true);
   };
 
   const handleOrderNow = async () => {
     if (lines.length === 0) return;
+
     if (!formValid) {
-      setShowForm(true);
       setTimeout(() => {
         const y =
           (formRef.current?.getBoundingClientRect().top || 0) +
@@ -291,10 +331,12 @@ export default function PreviewPage() {
       }, 0);
       return;
     }
+
     try {
       localStorage.setItem(LOCAL_SUBMITTED_KEY, "true");
     } catch {}
     setFormSubmitted(true);
+
     const bytes = await generateCartPdfBytes({
       lines,
       totalItems: cart.totalItems,
@@ -304,14 +346,17 @@ export default function PreviewPage() {
         phone: form.phone.trim(),
         address: form.address.trim(),
         eventType: form.eventType || "",
-        startDateTime: form.startDateTime || "",
-        endDateTime: form.endDateTime || "",
+        // ✅ PASS FORMATTED STRINGS
+        startDateTime: prettyStart || "",
+        endDateTime: prettyEnd || "",
         mapUrl: form.mapUrl || "",
       },
     });
+
     const filename = buildPdfFilename(form.name);
     const blob = new Blob([bytes], { type: "application/pdf" });
     const file = new File([blob], filename, { type: "application/pdf" });
+
     const nav = navigator as any;
     if (nav.canShare?.({ files: [file] })) {
       try {
@@ -323,18 +368,21 @@ export default function PreviewPage() {
         return;
       } catch {}
     }
+
     robustDownloadPdf(bytes, filename);
 
-    // Optional WhatsApp message (already includes all inputs)
+    // ✅ WhatsApp message uses formatted "When"
     const linesTxt = lines.map((l) => `• ${l.item.name} x ${l.qty} = ₹${l.lineTotal.toFixed(0)}`).join("%0A");
     const total = `Total: ₹${cart.totalAmount.toFixed(0)}`;
-   const detail =
-  `Name: ${encodeURIComponent(form.name)}%0A` +
-  `Phone: ${encodeURIComponent(form.phone)}%0A` +
-  `Event: ${encodeURIComponent(form.eventType)}%0A` +
-  `When: ${encodeURIComponent(`${form.startDateTime} to ${form.endDateTime}`)}%0A` +
-  `Address: ${encodeURIComponent(form.address)}%0A` +
-  (form.mapUrl ? `Map: ${encodeURIComponent(form.mapUrl)}%0A` : "");
+
+    const detail =
+      `Name: ${encodeURIComponent(form.name)}%0A` +
+      `Phone: ${encodeURIComponent(form.phone)}%0A` +
+      `Event: ${encodeURIComponent(form.eventType)}%0A` +
+      `When: ${encodeURIComponent(whenText)}%0A` +
+      `Address: ${encodeURIComponent(form.address)}%0A` +
+      (form.mapUrl ? `Map: ${encodeURIComponent(form.mapUrl)}%0A` : "");
+
     const waUrl = `https://wa.me/${encodeURIComponent(form.phone)}?text=${`Chandini Hirers - Order%0A%0A${linesTxt}%0A%0A${total}%0A%0A${detail}`}`;
     window.open(waUrl, "_blank", "noopener,noreferrer");
   };
@@ -368,8 +416,26 @@ export default function PreviewPage() {
             <ArrowLeft className="w-4 h-4 mr-1" />
             Back
           </button>
-          <h2 className="text-xl font-semibold text-white">Preview</h2>
+
+          <div className="flex flex-col">
+            <h2 className="text-xl font-semibold text-white">Preview</h2>
+
+            {/* ✅ SHOW DATA DATE/TIME in requested format */}
+            {whenText ? (
+              <div className="text-xs text-gray-400 leading-tight">
+                {form.eventType ? (
+                  <span className="mr-2">
+                    Event: <span className="text-gray-300">{form.eventType}</span>
+                  </span>
+                ) : null}
+                <span>
+                  When: <span className="text-gray-300">{whenText}</span>
+                </span>
+              </div>
+            ) : null}
+          </div>
         </div>
+
         <button
           className="text-sm px-3 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:border-[color:var(--color-primary)] hover:text-white transition disabled:opacity-40"
           onClick={handleClearAll}
@@ -408,6 +474,7 @@ export default function PreviewPage() {
                     <div className="text-xs text-gray-400 leading-tight">₹{l.item.price.toFixed(0)} each</div>
                   </div>
                 </div>
+
                 <div className="flex-shrink-0">
                   <QtyStepper
                     value={l.qty}
@@ -416,6 +483,7 @@ export default function PreviewPage() {
                     onSet={(q) => cart.setQty(l.item, q)}
                   />
                 </div>
+
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="font-semibold text-[color:var(--color-primary)] text-sm whitespace-nowrap">
                     ₹{l.lineTotal.toFixed(0)}
@@ -441,6 +509,7 @@ export default function PreviewPage() {
                     unoptimized
                   />
                 </div>
+
                 <div className="min-w-0">
                   <div
                     className="text-[13px] font-medium text-white leading-tight"
@@ -456,6 +525,7 @@ export default function PreviewPage() {
                   </div>
                   <div className="text-[12px] text-gray-400 whitespace-nowrap">₹{l.item.price.toFixed(0)} each</div>
                 </div>
+
                 <div className="col-start-2 flex items-center justify-between">
                   <div className="-ml-1 scale-90 origin-left">
                     <QtyStepper
@@ -465,9 +535,11 @@ export default function PreviewPage() {
                       onSet={(q) => cart.setQty(l.item, q)}
                     />
                   </div>
+
                   <span className="mx-2 inline-flex items-center px-2.5 py-1 rounded-full text-[12px] font-semibold bg-[#1d2440] text-[color:var(--color-primary)]">
                     ₹{l.lineTotal.toFixed(0)}
                   </span>
+
                   <button
                     onClick={() => cart.clearItem(l.item)}
                     className="inline-flex items-center p-2 rounded-md bg-[#131a2f] text-gray-300 hover:bg-[#1e253c] transition"
@@ -480,6 +552,7 @@ export default function PreviewPage() {
               </div>
             </div>
           ))}
+
           <div className="text-right px-2 sm:px-4 mt-2">
             <div className="text-sm text-gray-300">
               Total Items: <span className="font-medium text-white">{cart.totalItems}</span>
@@ -536,6 +609,7 @@ export default function PreviewPage() {
             {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             {showPreview ? "Hide Preview" : "Preview PDF"}
           </button>
+
           <button
             className="bg-[color:var(--color-primary)] text-white rounded-xl py-3 hover:saturate-125 transition disabled:opacity-40"
             onClick={handleOrderNow}

@@ -19,20 +19,37 @@ const INR0 = new Intl.NumberFormat("en-IN", {
 function formatINR(amount: number, fontsOk: boolean) {
   return fontsOk ? INR0.format(amount) : "Rs " + Math.round(amount).toLocaleString("en-IN");
 }
+
+/* ===================== Date formatting ======================= */
+/** ✅ "14 DEC 2025 4: 20 PM" */
+function formatChandiniDateTime(input?: string | Date | null) {
+  if (!input) return "";
+  const d = input instanceof Date ? input : new Date(input);
+  if (Number.isNaN(d.getTime())) return typeof input === "string" ? input : "";
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const mon = d.toLocaleString("en-US", { month: "short" }).toUpperCase();
+  const year = d.getFullYear();
+
+  let hrs = d.getHours();
+  const mins = String(d.getMinutes()).padStart(2, "0");
+  const ampm = hrs >= 12 ? "PM" : "AM";
+  hrs = hrs % 12;
+  if (hrs === 0) hrs = 12;
+
+  return `${day} ${mon} ${year} ${hrs}: ${mins} ${ampm}`;
+}
+
 function toLinkableUrl(raw?: string): string | null {
   if (!raw) return null;
   const s = raw.trim();
-  if (/^https?:\/\//i.test(s)) return s; // already a link
+  if (/^https?:\/\//i.test(s)) return s;
 
-  // If user pasted "lat,lng", make a Google Maps search URL
   if (/^\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*$/.test(s)) {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s)}`;
   }
-
-  // Fallback: not a link we can safely convert
   return null;
 }
-
 
 /* ============ Asset loading state (fonts/icons) ============== */
 let fontsReady = false;
@@ -60,7 +77,7 @@ function getBasePrefix(): string {
       if (typeof d.assetPrefix === "string" && d.assetPrefix.length > 0) return d.assetPrefix;
       if (typeof d.basePath === "string" && d.basePath.length > 0) return d.basePath;
     }
-  } catch { }
+  } catch {}
   const envBase = process.env.NEXT_PUBLIC_BASE_PATH;
   if (typeof envBase === "string" && envBase.length > 0) return envBase;
   if (typeof document !== "undefined") {
@@ -129,14 +146,13 @@ async function ensureFonts(doc: jsPDF) {
     doc.addFont("DejaVuSans-Bold.ttf", "DejaVu", "bold");
     try {
       doc.setFont("DejaVu", "normal");
-    } catch { }
+    } catch {}
   } else {
     doc.setFont("helvetica", "normal");
   }
 }
 
 /* ========================= Icons ============================= */
-// TIP: change the filenames here if your assets differ (e.g., whatsapp.jpeg vs .png)
 async function _loadIcons() {
   try {
     const [ig, wa, yt, mp] = await Promise.all([
@@ -150,7 +166,7 @@ async function _loadIcons() {
     iconYouTubeB64 = yt;
     iconMapPinB64 = mp;
   } catch {
-    // ignore; we'll just skip icons if any fail
+    // ignore
   } finally {
     iconsReady = true;
   }
@@ -203,10 +219,13 @@ function addFooterIcons(doc: jsPDF) {
 
   let x = margin + doc.getTextWidth("Connect:") + 16;
 
-  // Provide format per icon so we embed correctly (PNG vs JPEG).
   const icons: Array<{ b64: string | null; fmt: "PNG" | "JPEG"; url: string }> = [
     { b64: iconInstagramB64, fmt: "PNG", url: "https://www.instagram.com/chandhinihirers_nellore/" },
-    { b64: iconWhatsAppB64, fmt: "JPEG", url: "https://wa.me/919000660208?text=Hello%20I%20want%20to%20know%20more%20about%20your%20services" },
+    {
+      b64: iconWhatsAppB64,
+      fmt: "JPEG",
+      url: "https://wa.me/919000660208?text=Hello%20I%20want%20to%20know%20more%20about%20your%20services",
+    },
     { b64: iconYouTubeB64, fmt: "PNG", url: "https://www.youtube.com/@chandhinihirers_nellore" },
     { b64: iconMapPinB64, fmt: "PNG", url: "https://maps.app.goo.gl/o3orgsRNWrdUJZh76" },
   ];
@@ -220,15 +239,13 @@ function addFooterIcons(doc: jsPDF) {
         doc.link(x, centerY - iconSize + 2, iconSize, iconSize, { url: ico.url });
         x += iconSize + gap;
       } catch {
-        // skip if addImage fails for any reason
+        // skip
       }
     }
   });
 }
 
-
 /* ==================== PDF Builder =========================== */
-/** Now prints ALL form inputs: name, phone, eventType, , address, mapUrl */
 export async function generateCartPdfBytes({
   title = "Chandini Hirers",
   lines,
@@ -263,7 +280,9 @@ export async function generateCartPdfBytes({
   const colQtyX = pageWidth - 180;
   const colAmtRight = pageWidth - margin;
   const RIGHT: TextOptionsLight = { align: "right" } as const;
-  const dateStr = new Date().toISOString().slice(0, 16).replace("T", " ");
+
+  // ✅ FIX: Generated time in required format (NOT ISO)
+  const dateStr = formatChandiniDateTime(new Date());
 
   // ---------- spacing & metrics ----------
   const FONT_SIZE_BODY = 11;
@@ -289,7 +308,6 @@ export async function generateCartPdfBytes({
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const buf = await res.arrayBuffer();
 
-      // naive detect via file name (fast) — good enough if your catalog files have correct extensions
       const isPng = /\.png(\?|#|$)/i.test(url);
       const b64 = await toBase64(buf);
       const mime = isPng ? "image/png" : "image/jpeg";
@@ -302,8 +320,6 @@ export async function generateCartPdfBytes({
       return null;
     }
   }
-
-  // ...
 
   const drawHeader = () => {
     drawTiledDiagonalWatermark(doc, "chandini hirers");
@@ -325,7 +341,6 @@ export async function generateCartPdfBytes({
       doc.setFont("helvetica", "normal");
     }
 
-    // We'll render ALL inputs. We'll compute the widest label for alignment.
     const kv: Array<[label: string, value?: string]> = [
       ["Generated:", dateStr],
       ["Customer:", customer?.name || ""],
@@ -344,7 +359,6 @@ export async function generateCartPdfBytes({
 
     let y = margin + 28;
 
-    // Render each key/value, with wrapping for Address & Map
     for (const [label, val] of kv) {
       doc.text(label, margin, y);
 
@@ -352,14 +366,20 @@ export async function generateCartPdfBytes({
         if (label === "Map:") {
           const url = toLinkableUrl(val);
           if (url) {
-            // Clickable link text (short and clean)
-            try { doc.setFont("DejaVu", "bold"); } catch { doc.setFont("helvetica", "bold"); }
-            doc.setTextColor(33, 150, 243); // optional: “link blue”; remove if you want default color
+            try {
+              doc.setFont("DejaVu", "bold");
+            } catch {
+              doc.setFont("helvetica", "bold");
+            }
+            doc.setTextColor(33, 150, 243);
             doc.textWithLink("Open map", valueX, y, { url });
             doc.setTextColor(0, 0, 0);
-            try { doc.setFont("DejaVu", "normal"); } catch { doc.setFont("helvetica", "normal"); }
+            try {
+              doc.setFont("DejaVu", "normal");
+            } catch {
+              doc.setFont("helvetica", "normal");
+            }
           } else {
-            // Couldn’t make it a link—just print (wrapped) as plain text
             const wrapped = doc.splitTextToSize(val, pageWidth - valueX - margin) as string[];
             if (wrapped.length > 0) {
               doc.text(wrapped[0], valueX, y);
@@ -370,7 +390,6 @@ export async function generateCartPdfBytes({
             }
           }
         } else {
-          // Normal wrapped text for other rows
           const wrapped = doc.splitTextToSize(val, pageWidth - valueX - margin) as string[];
           if (wrapped.length > 0) {
             doc.text(wrapped[0], valueX, y);
@@ -384,7 +403,6 @@ export async function generateCartPdfBytes({
 
       y += LINE_H;
     }
-
 
     // Table header
     const thTop = Math.max(y + DETAILS_TABLE_GAP, margin + 70);
@@ -431,7 +449,7 @@ export async function generateCartPdfBytes({
       }
       doc.setFontSize(FONT_SIZE_BODY);
     }
-    
+
     const priceStr = formatINR(l.item.price, fontsOk);
     const amountStr = formatINR(l.lineTotal, fontsOk);
     const imgUrl = l.item.previewImage || l.item.imageAssets?.[0] || "/images/placeholder.jpeg";
@@ -448,7 +466,7 @@ export async function generateCartPdfBytes({
       try {
         const img = await getItemImageB64(imgUrl);
         if (img) doc.addImage(img.dataUrl, img.fmt, margin, imgY, IMG_SIZE, IMG_SIZE);
-      } catch { }
+      } catch {}
     }
 
     const textTop = rowTop + (rowH - textBlockH) / 2;
@@ -489,14 +507,10 @@ export async function generateCartPdfBytes({
 function pad2(n: number) {
   return n < 10 ? `0${n}` : String(n);
 }
-
 function sanitizeName(name?: string) {
   const n = (name || "order").trim().toLowerCase();
-  // keep letters, numbers, hyphen/underscore; collapse spaces to hyphen
   return n.replace(/\s+/g, "-").replace(/[^a-z0-9-_]/g, "").replace(/-+/g, "-") || "order";
 }
-
-/** e.g. "chandini-06-03-2025-19-20.pdf" */
 export function buildPdfFilename(customerName?: string, d: Date = new Date()) {
   const name = sanitizeName(customerName);
   const DD = pad2(d.getDate());
@@ -510,7 +524,6 @@ export function buildPdfFilename(customerName?: string, d: Date = new Date()) {
 /* ===================== Robust Downloader ===================== */
 export function robustDownloadPdf(bytes: ArrayBuffer, filename?: string, customerNameForFallback?: string) {
   try {
-    // fallback filename if not provided
     const finalName = filename && filename.trim().length > 0 ? filename : buildPdfFilename(customerNameForFallback);
 
     const blob = new Blob([bytes], { type: "application/pdf" });
@@ -523,13 +536,16 @@ export function robustDownloadPdf(bytes: ArrayBuffer, filename?: string, custome
     const isIOS =
       /iP(ad|hone|od)/.test(navigator.platform) ||
       (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+
     const a = document.createElement("a");
     a.href = url;
     a.rel = "noopener";
     a.target = isIOS ? "_blank" : "_self";
     if (!isIOS) a.download = finalName;
+
     document.body.appendChild(a);
     a.click();
+
     setTimeout(() => {
       URL.revokeObjectURL(url);
       a.remove();
