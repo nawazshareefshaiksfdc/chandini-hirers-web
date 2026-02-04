@@ -97,6 +97,7 @@ export const kCatalog: Item[] = [
   { id: "cs11", name: "Single white Raja", imageAssets: ["./images/Chairs&Sofas/SingleRajaChair.jpeg"], price: 1000, category: Categories.chairsAndSofas },
   { id: "cs12", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Sofa2.jpg"], price: 1000, category: Categories.chairsAndSofas },
   { id: "cs13", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Sofa1.jpg"], price: 1500, category: Categories.chairsAndSofas },
+  {id: "cs14", name: "Double Raja Sofa", imageAssets: ["./images/Chairs&Sofas/Maharaja3.jpeg"], price: 1500, category: Categories.chairsAndSofas },
 
   // ─────────────────────────── Tables & Stage ───────────────────────────
   { id: "tss1", name: "Single Stall Set", imageAssets: ["./images/TablesStalls&Stage/SingleStall1.jpeg","./images/TablesStalls&Stage/SingleStall2.jpg"], price: 399, category: Categories.tablesAndStage },
