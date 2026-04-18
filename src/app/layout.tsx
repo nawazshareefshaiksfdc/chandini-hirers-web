@@ -1,7 +1,10 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
+import Script from "next/script";
 import "./global.css";
+import CatalogBootstrap from "@/components/CatalogBootstrap";
+import TopNav from "@/components/TopNav";
 import { CartProvider } from "@/context/CartContext";
-import CatalogBootstrap from "@/components/CatalogBootstrap"; // 👈
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 
 export const metadata: Metadata = {
   title: "Chandini Hirers",
@@ -10,17 +13,31 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-dvh text-[color:var(--color-ink)]">
-        <CartProvider>
-          <CatalogBootstrap /> {/* 👈 ensures catalog is loaded after any refresh/deep-link */}
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="h-2 bg-[color:var(--color-primary)] rounded-b-2xl mb-4" />
-            {children}
-            <div className="h-8" />
-          </div>
-        </CartProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className="min-h-dvh bg-[color:var(--color-bg)] text-[color:var(--color-text)]">
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`
+            (() => {
+              try {
+                const stored = localStorage.getItem("chandini.theme");
+                const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                const isDark = stored === "dark" || ((stored === null || stored === "system") && prefersDark);
+                document.documentElement.classList.toggle("dark", isDark);
+                document.documentElement.style.colorScheme = isDark ? "dark" : "light";
+              } catch {}
+            })();
+          `}
+        </Script>
+
+        <ThemeProvider>
+          <CartProvider>
+            <CatalogBootstrap />
+            <TopNav />
+            <div className="mx-auto w-full max-w-[1200px] px-4 pb-8 pt-4 sm:px-6 lg:px-8">{children}</div>
+          </CartProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
 }
+

@@ -1,26 +1,20 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 
 export type SocialLink = {
-  href: string;       // Destination URL
-  label: string;      // Accessible label / title
-  imgSrc: string;     // e.g. "/social/instagram.png"
-  size?: number;      // icon size in px (default 22)
+  href: string;
+  label: string;
+  imgSrc: string;
+  size?: number;
 };
 
 type Props = {
   links: SocialLink[];
-  onReady?: () => void; // optional callback when all images are preloaded
+  onReady?: () => void;
 };
 
-/**
- * SocialLinksBar
- * - Preloads all icon images before showing them (skeleton while loading)
- * - 44×44px touch targets (mobile-friendly)
- * - Accessible labels and focus ring
- */
 export default function SocialLinksBar({ links, onReady }: Props) {
   const [ready, setReady] = useState(false);
 
@@ -41,7 +35,6 @@ export default function SocialLinksBar({ links, onReady }: Props) {
           )
         );
       } catch {
-        // Even if one fails, don't block UI forever
       } finally {
         if (!cancelled) {
           setReady(true);
@@ -57,14 +50,13 @@ export default function SocialLinksBar({ links, onReady }: Props) {
   }, [links, onReady]);
 
   if (!ready) {
-    // Skeleton placeholders (same count as links)
     return (
-      <div className="flex items-center justify-center gap-3 sm:gap-4 pb-2">
+      <div className="flex items-center justify-center gap-3 pb-2 sm:gap-4">
         {links.map((_, idx) => (
           <div
             key={idx}
-            className="rounded-full bg-gray-200 animate-pulse"
-            style={{ width: 44, height: 44 }}
+            className="animate-pulse rounded-full"
+            style={{ width: 44, height: 44, backgroundColor: "var(--color-border)" }}
             aria-hidden="true"
           />
         ))}
@@ -73,7 +65,7 @@ export default function SocialLinksBar({ links, onReady }: Props) {
   }
 
   return (
-    <div className="flex items-center justify-center gap-3 sm:gap-4 pb-2">
+    <div className="flex items-center justify-center gap-3 pb-2 sm:gap-4">
       {links.map((l) => {
         const size = l.size ?? 22;
         return (
@@ -84,8 +76,8 @@ export default function SocialLinksBar({ links, onReady }: Props) {
             rel="noopener noreferrer"
             aria-label={l.label}
             title={l.label}
-            className="inline-flex items-center justify-center rounded-full border shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] transition"
-            style={{ width: 44, height: 44 }}
+            className="inline-flex items-center justify-center rounded-full border shadow-sm transition-all duration-200 hover:-translate-y-0.5"
+            style={{ width: 44, height: 44, backgroundColor: "var(--color-card)", borderColor: "var(--color-border)" }}
           >
             <Image
               src={l.imgSrc}

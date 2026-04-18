@@ -31,7 +31,13 @@ export default function FullScreenLoader({
     >
       <div className="pointer-events-none">
         <div className="flex items-end gap-[6px]">
-          {["#4c86f9", "#49a84c", "#f6bb02", "#f6bb02", "#2196f3"].map((c, i) => (
+          {[
+            "var(--color-primary)",
+            "var(--color-muted)",
+            "var(--color-primary)",
+            "var(--color-muted)",
+            "var(--color-primary)",
+          ].map((c, i) => (
             <span
               key={i}
               className="w-[4px] h-[50px] animate-barscale origin-bottom rounded-[2px]"

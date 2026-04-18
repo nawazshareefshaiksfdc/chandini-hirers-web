@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { RefObject } from "react";
 
@@ -13,8 +13,13 @@ export default function PdfPreview({ pdfUrl, showPreview, previewRef }: Props) {
 
   return (
     <div ref={previewRef} id="pdf-preview" className="mt-4">
-      <h4 className="text-white font-medium mb-2">PDF Preview</h4>
-      <iframe src={pdfUrl} className="w-full h-[70vh] rounded-lg border border-gray-800 bg-[#0c1323]" />
+      <h4 className="mb-2 font-medium">PDF Preview</h4>
+      <iframe
+        src={pdfUrl}
+        title="PDF preview"
+        className="h-[56vh] w-full rounded-xl border bg-[color:var(--color-bg)] sm:h-[70vh]"
+        style={{ borderColor: "var(--color-border)" }}
+      />
     </div>
   );
 }

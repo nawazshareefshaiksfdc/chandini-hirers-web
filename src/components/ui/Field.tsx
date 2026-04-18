@@ -1,16 +1,12 @@
-"use client";
+﻿"use client";
 
-import React from "react";
+import React, { useId } from "react";
 import { X } from "lucide-react";
 
 export const uiFieldClass = (invalid: boolean, enabled = true) => {
-  const base =
-    "w-full px-3 py-2 rounded-md bg-[#0c1323] border text-sm outline-none focus:ring-1";
-  const state = invalid
-    ? "border-amber-400 text-amber-100 placeholder-amber-200 focus:ring-amber-400 bg-amber-500/5"
-    : "border-gray-700 text-gray-100 placeholder-gray-400 focus:ring-[color:var(--color-primary)]";
+  const state = invalid ? "ui-input ui-input-invalid" : "ui-input";
   const lock = enabled ? "" : " opacity-60 cursor-not-allowed";
-  return base + " " + state + lock;
+  return `${state}${lock}`;
 };
 
 type WithClear = {
@@ -26,144 +22,155 @@ function hasNonEmptyValue(v: unknown) {
   return String(v).trim().length > 0;
 }
 
-export function InputField(
-  props: React.InputHTMLAttributes<HTMLInputElement> & WithClear
-) {
-  const { invalid, label, hint, className, onClear, disabled, value, ...rest } =
-    props;
+function FieldHint({ invalid, hint, id }: { invalid?: boolean; hint?: string; id: string }) {
+  if (!hint) return null;
+  return (
+    <p id={id} className={invalid ? "ui-error" : "ui-help"}>
+      {hint}
+    </p>
+  );
+}
 
+export function InputField(props: React.InputHTMLAttributes<HTMLInputElement> & WithClear) {
+  const { invalid, label, hint, className, onClear, disabled, value, id, ...rest } = props;
+  const autoId = useId();
+  const fieldId = id ?? autoId;
+  const hintId = `${fieldId}-hint`;
   const showClear = !!onClear && !disabled && hasNonEmptyValue(value);
 
   return (
-    <div className="flex flex-col">
-      {label && <label className="text-xs text-gray-400 mb-1">{label}</label>}
+    <div className="flex min-w-0 flex-col gap-1">
+      {label && (
+        <label htmlFor={fieldId} className="ui-label">
+          {label}
+        </label>
+      )}
 
       <div className="relative">
         <input
-          className={
-            uiFieldClass(!!invalid, !disabled) +
-            (showClear ? " pr-10" : "") +
-            (className ? " " + className : "")
-          }
+          id={fieldId}
+          className={[uiFieldClass(!!invalid, !disabled), showClear ? "pr-10" : "", className ?? ""]
+            .join(" ")
+            .trim()}
           disabled={disabled}
           value={value}
+          aria-invalid={invalid || undefined}
+          aria-describedby={hint ? hintId : undefined}
           {...rest}
         />
 
-        {/* ✅ Only show clear button when input has value */}
         {showClear && (
           <button
             type="button"
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[#1b2340]"
+            className="absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg transition-all duration-200 hover:bg-[color:var(--color-primary-weak)]"
             onClick={onClear}
             aria-label="Clear"
             title="Clear"
           >
-            <X className="w-4 h-4 text-gray-300" />
+            <X className="h-4 w-4" style={{ color: "var(--color-muted)" }} />
           </button>
         )}
       </div>
 
-      {invalid && hint && <p className="mt-1 text-[11px] text-amber-300">{hint}</p>}
+      <FieldHint invalid={invalid} hint={hint} id={hintId} />
     </div>
   );
 }
 
-export function TextareaField(
-  props: React.TextareaHTMLAttributes<HTMLTextAreaElement> & WithClear
-) {
-  const {
-    invalid,
-    label,
-    hint,
-    className,
-    rows = 3,
-    onClear,
-    disabled,
-    value,
-    ...rest
-  } = props;
-
+export function TextareaField(props: React.TextareaHTMLAttributes<HTMLTextAreaElement> & WithClear) {
+  const { invalid, label, hint, className, rows = 3, onClear, disabled, value, id, ...rest } = props;
+  const autoId = useId();
+  const fieldId = id ?? autoId;
+  const hintId = `${fieldId}-hint`;
   const showClear = !!onClear && !disabled && hasNonEmptyValue(value);
 
   return (
-    <div className="flex flex-col">
-      {label && <label className="text-xs text-gray-400 mb-1">{label}</label>}
+    <div className="flex min-w-0 flex-col gap-1">
+      {label && (
+        <label htmlFor={fieldId} className="ui-label">
+          {label}
+        </label>
+      )}
 
       <div className="relative">
         <textarea
+          id={fieldId}
           rows={rows}
-          className={
-            uiFieldClass(!!invalid, !disabled) +
-            (showClear ? " pr-10" : "") +
-            (className ? " " + className : "")
-          }
+          className={[uiFieldClass(!!invalid, !disabled), showClear ? "pr-10" : "", className ?? ""]
+            .join(" ")
+            .trim()}
           disabled={disabled}
           value={value}
+          aria-invalid={invalid || undefined}
+          aria-describedby={hint ? hintId : undefined}
           {...rest}
         />
 
-        {/* ✅ Only show clear button when textarea has value */}
         {showClear && (
           <button
             type="button"
-            className="absolute right-2 top-2 p-1 rounded hover:bg-[#1b2340]"
+            className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-lg transition-all duration-200 hover:bg-[color:var(--color-primary-weak)]"
             onClick={onClear}
             aria-label="Clear"
             title="Clear"
           >
-            <X className="w-4 h-4 text-gray-300" />
+            <X className="h-4 w-4" style={{ color: "var(--color-muted)" }} />
           </button>
         )}
       </div>
 
-      {invalid && hint && <p className="mt-1 text-[11px] text-amber-300">{hint}</p>}
+      <FieldHint invalid={invalid} hint={hint} id={hintId} />
     </div>
   );
 }
 
 export function SelectField(
-  props: React.SelectHTMLAttributes<HTMLSelectElement> &
-    WithClear & { children: React.ReactNode }
+  props: React.SelectHTMLAttributes<HTMLSelectElement> & WithClear & { children: React.ReactNode }
 ) {
-  const { invalid, label, hint, className, disabled, children, onClear, value, ...rest } =
-    props;
-
+  const { invalid, label, hint, className, disabled, children, onClear, value, id, ...rest } = props;
+  const autoId = useId();
+  const fieldId = id ?? autoId;
+  const hintId = `${fieldId}-hint`;
   const showClear = !!onClear && !disabled && hasNonEmptyValue(value);
 
   return (
-    <div className="flex flex-col">
-      {label && <label className="text-xs text-gray-400 mb-1">{label}</label>}
+    <div className="flex min-w-0 flex-col gap-1">
+      {label && (
+        <label htmlFor={fieldId} className="ui-label">
+          {label}
+        </label>
+      )}
 
       <div className="relative">
         <select
-          className={
-            uiFieldClass(!!invalid, !disabled) +
-            (showClear ? " pr-10" : "") +
-            (className ? " " + className : "")
-          }
+          id={fieldId}
+          className={[uiFieldClass(!!invalid, !disabled), showClear ? "pr-10" : "", className ?? ""]
+            .join(" ")
+            .trim()}
           disabled={disabled}
           value={value}
+          aria-invalid={invalid || undefined}
+          aria-describedby={hint ? hintId : undefined}
           {...rest}
         >
           {children}
         </select>
 
-        {/* ✅ Optional: clear for select if you pass onClear */}
         {showClear && (
           <button
             type="button"
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[#1b2340]"
+            className="absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg transition-all duration-200 hover:bg-[color:var(--color-primary-weak)]"
             onClick={onClear}
             aria-label="Clear"
             title="Clear"
           >
-            <X className="w-4 h-4 text-gray-300" />
+            <X className="h-4 w-4" style={{ color: "var(--color-muted)" }} />
           </button>
         )}
       </div>
 
-      {invalid && hint && <p className="mt-1 text-[11px] text-amber-300">{hint}</p>}
+      <FieldHint invalid={invalid} hint={hint} id={hintId} />
     </div>
   );
 }
+

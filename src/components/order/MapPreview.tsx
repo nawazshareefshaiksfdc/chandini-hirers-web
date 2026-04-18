@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 type Props = { embedSrc: string | null };
 
@@ -8,7 +8,9 @@ export default function MapPreview({ embedSrc }: Props) {
     <div className="mt-2">
       <iframe
         src={embedSrc}
-        className="w-full h-[300px] rounded-lg border border-gray-800 bg-[#0c1323]"
+        title="Map preview"
+        className="h-[280px] w-full rounded-xl border bg-[color:var(--color-bg)] sm:h-[320px]"
+        style={{ borderColor: "var(--color-border)" }}
         loading="lazy"
         allowFullScreen
         referrerPolicy="no-referrer-when-downgrade"

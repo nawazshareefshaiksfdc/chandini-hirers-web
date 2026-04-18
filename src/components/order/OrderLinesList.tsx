@@ -1,15 +1,14 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { Trash2 } from "lucide-react";
-// IMPORTANT: import your real Item type (has `category`)
-import type { Item } from "@/types"; // if your barrel isn't set, use "@/types/index"
+import type { Item } from "@/types";
 
 const QtyStepper = dynamic(() => import("@/components/QtyStepper"), { ssr: false });
 
 type ItemLine = {
-  item: Item;            // <-- use the real Item type so `category` is present
+  item: Item;
   qty: number;
   lineTotal: number;
 };
@@ -34,7 +33,7 @@ export default function OrderLinesList({
   onClearItem,
 }: Props) {
   if (lines.length === 0) {
-    return <div className="text-center text-gray-400 py-16 text-sm">No items to preview</div>;
+    return <div className="py-16 text-center text-sm" style={{ color: "var(--color-muted)" }}>No items to preview</div>;
   }
 
   return (
@@ -42,12 +41,12 @@ export default function OrderLinesList({
       {lines.map((l) => (
         <div
           key={l.item.id}
-          className="rounded-lg border border-gray-800 bg-[#141b2d] hover:bg-[#1a2236] transition px-2 py-2 sm:px-3 sm:py-2"
+          className="rounded-xl border px-2 py-2 transition-all duration-200 sm:px-3"
+          style={{ backgroundColor: "var(--color-card)", borderColor: "var(--color-border)" }}
         >
-          {/* Desktop */}
-          <div className="hidden sm:flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="relative w-[85px] h-[85px] flex-shrink-0 overflow-hidden rounded-md bg-[#0f1625]">
+          <div className="hidden items-center justify-between gap-3 sm:flex">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="relative h-[85px] w-[85px] flex-shrink-0 overflow-hidden rounded-md" style={{ backgroundColor: "var(--color-bg)" }}>
                 <Image
                   src={l.item.previewImage || l.item.imageAssets?.[0] || "/images/placeholder.jpeg"}
                   alt={l.item.name}
@@ -56,13 +55,9 @@ export default function OrderLinesList({
                   unoptimized
                 />
               </div>
-              <div className="flex flex-col justify-center min-w-0">
-                <div className="font-medium text-white text-[15px] truncate leading-tight">
-                  {l.item.name}
-                </div>
-                <div className="text-xs text-gray-400 leading-tight">
-                  ₹{l.item.price.toFixed(0)} each
-                </div>
+              <div className="flex min-w-0 flex-col justify-center">
+                <div className="truncate text-[15px] font-medium leading-tight">{l.item.name}</div>
+                <div className="text-xs leading-tight" style={{ color: "var(--color-muted)" }}>₹{l.item.price.toFixed(0)} each</div>
               </div>
             </div>
 
@@ -75,23 +70,21 @@ export default function OrderLinesList({
               />
             </div>
 
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="font-semibold text-[color:var(--color-primary)] text-sm whitespace-nowrap">
-                ₹{l.lineTotal.toFixed(0)}
-              </span>
+            <div className="flex flex-shrink-0 items-center gap-2">
+              <span className="whitespace-nowrap text-sm font-semibold text-[color:var(--color-primary)]">₹{l.lineTotal.toFixed(0)}</span>
               <button
                 onClick={() => onClearItem(l.item)}
-                className="p-1.5 rounded-md hover:bg-[#1e253c] text-gray-400 hover:text-white transition"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200"
+                style={{ color: "var(--color-muted)" }}
                 title="Remove item"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          {/* Mobile */}
-          <div className="sm:hidden grid grid-cols-[72px,1fr] gap-2">
-            <div className="row-span-2 relative w-[72px] h-[72px] overflow-hidden rounded-md bg-[#0f1625]">
+          <div className="grid grid-cols-[72px,1fr] gap-2 sm:hidden">
+            <div className="relative row-span-2 h-[72px] w-[72px] overflow-hidden rounded-md" style={{ backgroundColor: "var(--color-bg)" }}>
               <Image
                 src={l.item.previewImage || l.item.imageAssets?.[0] || "/images/placeholder.jpeg"}
                 alt={l.item.name}
@@ -103,7 +96,7 @@ export default function OrderLinesList({
 
             <div className="min-w-0">
               <div
-                className="text-[13px] font-medium text-white leading-tight"
+                className="text-[13px] font-medium leading-tight"
                 style={{
                   display: "-webkit-box",
                   WebkitLineClamp: 2,
@@ -114,13 +107,11 @@ export default function OrderLinesList({
               >
                 {l.item.name}
               </div>
-              <div className="text-[12px] text-gray-400 whitespace-nowrap">
-                ₹{l.item.price.toFixed(0)} each
-              </div>
+              <div className="whitespace-nowrap text-[12px]" style={{ color: "var(--color-muted)" }}>₹{l.item.price.toFixed(0)} each</div>
             </div>
 
             <div className="col-start-2 flex items-center justify-between">
-              <div className="-ml-1 scale-90 origin-left">
+              <div className="-ml-1 origin-left scale-90">
                 <QtyStepper
                   value={l.qty}
                   onAdd={() => onIncrement(l.item)}
@@ -129,32 +120,33 @@ export default function OrderLinesList({
                 />
               </div>
 
-              <span className="mx-2 inline-flex items-center px-2.5 py-1 rounded-full text-[12px] font-semibold bg-[#1d2440] text-[color:var(--color-primary)]">
+              <span
+                className="mx-2 inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-semibold"
+                style={{ backgroundColor: "var(--color-primary-weak)", color: "var(--color-primary)" }}
+              >
                 ₹{l.lineTotal.toFixed(0)}
               </span>
 
               <button
                 onClick={() => onClearItem(l.item)}
-                className="inline-flex items-center p-2 rounded-md bg-[#131a2f] text-gray-300 hover:bg-[#1e253c] transition"
+                className="inline-flex items-center rounded-lg p-2 transition-all duration-200"
+                style={{ backgroundColor: "var(--color-bg)", color: "var(--color-muted)" }}
                 title="Remove item"
                 aria-label={`Remove ${l.item.name}`}
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="h-4 w-4" />
               </button>
             </div>
           </div>
         </div>
       ))}
 
-      <div className="text-right px-2 sm:px-4 mt-2">
-        <div className="text-sm text-gray-300">
-          Total Items: <span className="font-medium text-white">{totalItems}</span>
+      <div className="mt-2 space-y-1 px-2 text-right sm:px-4">
+        <div className="text-sm" style={{ color: "var(--color-muted)" }}>
+          Total Items: <span className="font-medium" style={{ color: "var(--color-text)" }}>{totalItems}</span>
         </div>
-        <div className="text-sm text-gray-300">
-          Total Amount:{" "}
-          <span className="font-semibold text-[color:var(--color-primary)]">
-            ₹{totalAmount.toFixed(0)}
-          </span>
+        <div className="text-sm" style={{ color: "var(--color-muted)" }}>
+          Total Amount: <span className="font-semibold text-[color:var(--color-primary)]">₹{totalAmount.toFixed(0)}</span>
         </div>
       </div>
     </div>

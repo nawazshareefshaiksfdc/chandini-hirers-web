@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 
@@ -18,7 +18,7 @@ export default function QtyStepper({ value, onAdd, onRemove, onSet, onClear }: P
 
   const clamp = (raw: string) => {
     const n = parseInt((raw ?? "").replace(/[^\d]/g, ""), 10);
-    return isNaN(n) || n < 0 ? 0 : n;
+    return Number.isNaN(n) || n < 0 ? 0 : n;
   };
 
   const apply = (raw: string) => {
@@ -41,7 +41,6 @@ export default function QtyStepper({ value, onAdd, onRemove, onSet, onClear }: P
   };
 
   const handleWheel = (e: React.WheelEvent<HTMLInputElement>) => {
-    // Only adjust when focused to avoid accidental changes while scrolling the page
     if (document.activeElement !== e.currentTarget) return;
     e.preventDefault();
     if (e.deltaY < 0) onAdd();
@@ -52,22 +51,21 @@ export default function QtyStepper({ value, onAdd, onRemove, onSet, onClear }: P
 
   return (
     <div className="flex items-center justify-center gap-1 text-xs sm:gap-1.5 sm:text-base">
-      {/* – Button */}
       <button
         type="button"
         aria-label="Decrease"
         disabled={disableMinus}
         onClick={onRemove}
-        className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-md text-base sm:text-lg font-bold transition cursor-pointer border
-        ${disableMinus
-            ? "bg-[#1a1a2e] border-gray-700 text-gray-500"
-            : "bg-[color:var(--color-card)] border-gray-600 text-[color:var(--color-ink)] hover:bg-[color:var(--color-primary)] hover:text-white"
-          }`}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border text-base font-bold transition-all duration-200 sm:h-9 sm:w-9 sm:text-lg"
+        style={{
+          backgroundColor: disableMinus ? "var(--color-bg)" : "var(--color-card)",
+          borderColor: "var(--color-border)",
+          color: disableMinus ? "var(--color-muted)" : "var(--color-text)",
+        }}
       >
-        −
+        -
       </button>
 
-      {/* Input */}
       <input
         ref={inputRef}
         value={text}
@@ -79,18 +77,18 @@ export default function QtyStepper({ value, onAdd, onRemove, onSet, onClear }: P
         inputMode="numeric"
         pattern="[0-9]*"
         aria-label="Quantity"
-        className="w-9 h-8 sm:w-10 sm:h-9 text-center rounded-md bg-[color:var(--color-card)] border border-gray-600 text-[color:var(--color-ink)] font-semibold focus:outline-none focus:ring-2 focus:ring-[color:var(--color-primary)]"
+        className="ui-input h-8 w-10 px-1 py-1 text-center font-semibold sm:h-9"
       />
 
-      {/* + Button */}
       <button
         type="button"
         aria-label="Increase"
         onClick={onAdd}
-        className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-md bg-[color:var(--color-primary)] hover:brightness-110 text-white font-bold text-base sm:text-lg transition cursor-pointer"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent bg-[color:var(--color-primary)] text-base font-bold text-white transition-all duration-200 hover:brightness-110 sm:h-9 sm:w-9 sm:text-lg"
       >
         +
       </button>
     </div>
   );
 }
+

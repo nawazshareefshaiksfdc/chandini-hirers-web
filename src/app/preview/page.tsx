@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
+﻿/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
@@ -61,7 +61,7 @@ function smoothScrollToY(targetY: number, duration = 500) {
     window.scrollTo(0, targetY);
   }
 }
-/* ✅ EXACT format: "14 DEC 2025 4: 20 PM" */
+/* Exact format: "14 DEC 2025 4: 20 PM" */
 function formatChandiniDateTime(input?: string | Date | null) {
   if (!input) return "";
   const d = input instanceof Date ? input : new Date(input);
@@ -512,34 +512,34 @@ export default function PreviewPage() {
     setChargesEditing(true);
   };
   return (
-    <main className="max-w-5xl mx-auto px-4 pb-56">
+    <main className="mx-auto w-full max-w-[1200px] px-4 pb-56 sm:px-6 lg:px-8">
       <header className="py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="inline-flex items-center px-3 py-1.5 rounded-lg border text-sm font-medium text-[color:var(--color-primary)] border-[color:var(--color-primary)] hover:bg-[color:var(--color-primary)] hover:text-white transition"
+            className="inline-flex items-center px-3 py-1.5 rounded-xl border text-sm font-medium text-[color:var(--color-primary)] border-[color:var(--color-primary)] hover:bg-[color:var(--color-primary)] hover:text-white transition"
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
             Back
           </button>
           <div className="flex flex-col">
-            <h2 className="text-xl font-semibold text-white">Preview</h2>
+            <h2 className="text-xl font-semibold text-[color:var(--color-text)]">Preview</h2>
             {whenText ? (
-              <div className="text-xs text-gray-400 leading-tight">
+              <div className="text-xs text-[color:var(--color-muted)] leading-tight">
                 {form.eventType ? (
                   <span className="mr-2">
-                    Event: <span className="text-gray-300">{form.eventType}</span>
+                    Event: <span className="text-[color:var(--color-muted)]">{form.eventType}</span>
                   </span>
                 ) : null}
                 <span>
-                  When: <span className="text-gray-300">{whenText}</span>
+                  When: <span className="text-[color:var(--color-muted)]">{whenText}</span>
                 </span>
               </div>
             ) : null}
           </div>
         </div>
         <button
-          className="text-sm px-3 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:border-[color:var(--color-primary)] hover:text-white transition disabled:opacity-40"
+          className="text-sm px-3 py-1.5 rounded-xl border border-[color:var(--color-border)] text-[color:var(--color-muted)] hover:border-[color:var(--color-primary)] hover:text-white transition disabled:opacity-40"
           onClick={handleClearAll}
           disabled={lines.length === 0}
         >
@@ -547,17 +547,17 @@ export default function PreviewPage() {
         </button>
       </header>
       {lines.length === 0 ? (
-        <div className="text-center text-gray-400 py-16 text-sm">No items to preview</div>
+        <div className="text-center text-[color:var(--color-muted)] py-16 text-sm">No items to preview</div>
       ) : (
         <div className="space-y-4">
           {lines.map((l) => (
             <div
               key={l.item.id}
-              className="relative overflow-hidden rounded-lg border border-gray-800 bg-[#141b2d] hover:bg-[#1a2236] transition px-2 py-2 sm:px-3 sm:py-2"
+              className="relative overflow-hidden rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-card)] hover:bg-[color:var(--color-primary-weak)] transition px-2 py-2 sm:px-3 sm:py-2"
             >
               <div className="hidden sm:flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="relative w-[85px] h-[85px] flex-shrink-0 overflow-hidden rounded-md bg-[#0f1625]">
+                  <div className="relative w-[85px] h-[85px] flex-shrink-0 overflow-hidden rounded-md bg-[color:var(--color-bg)]">
                     <Image
                       src={l.item.previewImage || l.item.imageAssets?.[0] || "/images/placeholder.jpeg"}
                       alt={l.item.name}
@@ -567,10 +567,10 @@ export default function PreviewPage() {
                     />
                   </div>
                   <div className="flex flex-col justify-center min-w-0">
-                    <div className="font-medium text-white text-[15px] truncate leading-tight">
+                    <div className="font-medium text-[color:var(--color-text)] text-[15px] truncate leading-tight">
                       {l.item.name}
                     </div>
-                    <div className="text-xs text-gray-400 leading-tight">
+                    <div className="text-xs text-[color:var(--color-muted)] leading-tight">
                       ₹{l.item.price.toFixed(0)} each
                     </div>
                   </div>
@@ -589,7 +589,7 @@ export default function PreviewPage() {
                   </span>
                   <button
                     onClick={() => cart.clearItem(l.item)}
-                    className="p-1.5 rounded-md hover:bg-[#1e253c] text-gray-400 hover:text-white transition"
+                    className="p-1.5 rounded-md hover:bg-[color:var(--color-primary-weak)] text-[color:var(--color-muted)] hover:text-white transition"
                     title="Remove item"
                     aria-label={`Remove ${l.item.name}`}
                   >
@@ -598,7 +598,7 @@ export default function PreviewPage() {
                 </div>
               </div>
               <div className="sm:hidden grid grid-cols-[72px,1fr] gap-2">
-                <div className="row-span-3 relative w-[72px] h-[72px] overflow-hidden rounded-md bg-[#0f1625]">
+                <div className="row-span-3 relative w-[72px] h-[72px] overflow-hidden rounded-md bg-[color:var(--color-bg)]">
                   <Image
                     src={l.item.previewImage || l.item.imageAssets?.[0] || "/images/placeholder.jpeg"}
                     alt={l.item.name}
@@ -609,7 +609,7 @@ export default function PreviewPage() {
                 </div>
                 <div className="min-w-0 flex items-start justify-between gap-2">
                   <div
-                    className="min-w-0 text-[13px] font-medium text-white leading-tight"
+                    className="min-w-0 text-[13px] font-medium text-[color:var(--color-text)] leading-tight"
                     style={{
                       display: "-webkit-box",
                       WebkitLineClamp: 2,
@@ -620,11 +620,11 @@ export default function PreviewPage() {
                   >
                     {l.item.name}
                   </div>
-                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[12px] font-semibold bg-[#1d2440] text-[color:var(--color-primary)]">
+                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[12px] font-semibold bg-[color:var(--color-primary-weak)] text-[color:var(--color-primary)]">
                     ₹{l.lineTotal.toFixed(0)}
                   </span>
                 </div>
-                <div className="col-start-2 text-[12px] text-gray-400 whitespace-nowrap -mt-1">
+                <div className="col-start-2 text-[12px] text-[color:var(--color-muted)] whitespace-nowrap -mt-1">
                   ₹{l.item.price.toFixed(0)} each
                 </div>
                 <div className="col-start-2 flex items-center justify-between gap-2">
@@ -638,7 +638,7 @@ export default function PreviewPage() {
                   </div>
                   <button
                     onClick={() => cart.clearItem(l.item)}
-                    className="inline-flex items-center justify-center w-9 h-9 rounded-md bg-[#131a2f] text-gray-300 hover:bg-[#1e253c] transition shrink-0"
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-md bg-[color:var(--color-bg)] text-[color:var(--color-muted)] hover:bg-[color:var(--color-primary-weak)] transition shrink-0"
                     title="Remove item"
                     aria-label={`Remove ${l.item.name}`}
                   >
@@ -648,14 +648,14 @@ export default function PreviewPage() {
               </div>
             </div>
           ))}
-          <div className="rounded-lg border border-gray-800 bg-[#141b2d] p-4">
+          <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-card)] p-4">
             <div className="flex items-start justify-between gap-3 mb-4">
-              <h3 className="text-white font-semibold text-lg">Charges & Adjustments</h3>
+              <h3 className="text-[color:var(--color-text)] font-semibold text-lg">Charges & Adjustments</h3>
               <div className="flex items-center gap-2">
                 {!chargesEditing && (
                   <button
                     onClick={() => setChargesEditing(true)}
-                    className="inline-flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 text-gray-300 hover:text-white hover:border-[color:var(--color-primary)] transition"
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-md border border-[color:var(--color-border)] text-[color:var(--color-muted)] hover:text-white hover:border-[color:var(--color-primary)] transition"
                     title="Edit charges"
                     aria-label="Edit charges"
                   >
@@ -664,7 +664,7 @@ export default function PreviewPage() {
                 )}
                 <button
                   onClick={handleDeleteCharges}
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 text-gray-300 hover:text-white hover:border-red-500 transition"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-md border border-[color:var(--color-border)] text-[color:var(--color-muted)] hover:text-white hover:border-red-500 transition"
                   title="Delete charges"
                   aria-label="Delete charges"
                 >
@@ -676,7 +676,7 @@ export default function PreviewPage() {
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="text-xs text-gray-400">Labour Charges</label>
+                    <label className="text-xs text-[color:var(--color-muted)]">Labour Charges</label>
                     <input
                       type="text"
                       inputMode="decimal"
@@ -688,11 +688,11 @@ export default function PreviewPage() {
                         }))
                       }
                       placeholder="e.g. 500"
-                      className="w-full mt-1 rounded-md bg-[#0f1625] border border-gray-700 px-3 py-2 text-white outline-none focus:border-[color:var(--color-primary)]"
+                      className="w-full mt-1 rounded-md bg-[color:var(--color-bg)] border border-[color:var(--color-border)] px-3 py-2 text-[color:var(--color-text)] outline-none focus:border-[color:var(--color-primary)]"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400">Transport Charges</label>
+                    <label className="text-xs text-[color:var(--color-muted)]">Transport Charges</label>
                     <input
                       type="text"
                       inputMode="decimal"
@@ -704,11 +704,11 @@ export default function PreviewPage() {
                         }))
                       }
                       placeholder="e.g. 300"
-                      className="w-full mt-1 rounded-md bg-[#0f1625] border border-gray-700 px-3 py-2 text-white outline-none focus:border-[color:var(--color-primary)]"
+                      className="w-full mt-1 rounded-md bg-[color:var(--color-bg)] border border-[color:var(--color-border)] px-3 py-2 text-[color:var(--color-text)] outline-none focus:border-[color:var(--color-primary)]"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1">Discount</label>
+                    <label className="text-xs text-[color:var(--color-muted)] block mb-1">Discount</label>
                     <div className="flex gap-2">
                       <input
                         type="text"
@@ -721,7 +721,7 @@ export default function PreviewPage() {
                           }))
                         }
                         placeholder={charges.discountType === "percent" ? "e.g. 10" : "e.g. 200"}
-                        className="flex-1 rounded-md bg-[#0f1625] border border-gray-700 px-3 py-2 text-white outline-none focus:border-[color:var(--color-primary)]"
+                        className="flex-1 rounded-md bg-[color:var(--color-bg)] border border-[color:var(--color-border)] px-3 py-2 text-[color:var(--color-text)] outline-none focus:border-[color:var(--color-primary)]"
                       />
                       <div>
                         <label htmlFor="discountType" className="sr-only">
@@ -736,7 +736,7 @@ export default function PreviewPage() {
                               discountType: e.target.value === "percent" ? "percent" : "amount",
                             }))
                           }
-                          className="rounded-md bg-[#0f1625] border border-gray-700 px-3 py-2 text-white outline-none focus:border-[color:var(--color-primary)]"
+                          className="rounded-md bg-[color:var(--color-bg)] border border-[color:var(--color-border)] px-3 py-2 text-[color:var(--color-text)] outline-none focus:border-[color:var(--color-primary)]"
                         >
                           <option value="amount">₹</option>
                           <option value="percent">%</option>
@@ -751,7 +751,7 @@ export default function PreviewPage() {
                       setChargesSubmitted(true);
                       setChargesEditing(false);
                     }}
-                    className="inline-flex items-center px-4 py-2 rounded-lg bg-[color:var(--color-primary)] text-white hover:saturate-125 transition"
+                    className="inline-flex items-center px-4 py-2 rounded-xl bg-[color:var(--color-primary)] text-white hover:saturate-125 transition"
                   >
                     Save charges
                   </button>
@@ -760,21 +760,21 @@ export default function PreviewPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 {charges.labour.trim() ? (
-                  <div className="rounded-md border border-gray-800 bg-[#0f1625] px-3 py-3">
-                    <div className="text-gray-400 text-xs mb-1">Labour Charges</div>
-                    <div className="text-white font-medium">₹{charges.labour}</div>
+                  <div className="rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-3">
+                    <div className="text-[color:var(--color-muted)] text-xs mb-1">Labour Charges</div>
+                    <div className="text-[color:var(--color-text)] font-medium">₹{charges.labour}</div>
                   </div>
                 ) : null}
                 {charges.transport.trim() ? (
-                  <div className="rounded-md border border-gray-800 bg-[#0f1625] px-3 py-3">
-                    <div className="text-gray-400 text-xs mb-1">Transport Charges</div>
-                    <div className="text-white font-medium">₹{charges.transport}</div>
+                  <div className="rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-3">
+                    <div className="text-[color:var(--color-muted)] text-xs mb-1">Transport Charges</div>
+                    <div className="text-[color:var(--color-text)] font-medium">₹{charges.transport}</div>
                   </div>
                 ) : null}
                 {charges.discount.trim() ? (
-                  <div className="rounded-md border border-gray-800 bg-[#0f1625] px-3 py-3 sm:col-span-2">
-                    <div className="text-gray-400 text-xs mb-1">Discount</div>
-                    <div className="text-white font-medium">
+                  <div className="rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-3 sm:col-span-2">
+                    <div className="text-[color:var(--color-muted)] text-xs mb-1">Discount</div>
+                    <div className="text-[color:var(--color-text)] font-medium">
                       {charges.discountType === "percent"
                         ? `${charges.discount}%`
                         : `₹${charges.discount}`}
@@ -784,7 +784,7 @@ export default function PreviewPage() {
                 {!charges.labour.trim() &&
                   !charges.transport.trim() &&
                   !charges.discount.trim() ? (
-                  <div className="rounded-md border border-gray-800 bg-[#0f1625] px-3 py-3 sm:col-span-2 text-gray-400">
+                  <div className="rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-3 sm:col-span-2 text-[color:var(--color-muted)]">
                     No additional charges added.
                   </div>
                 ) : null}
@@ -792,14 +792,14 @@ export default function PreviewPage() {
             )}
           </div>
           <div className="text-right px-2 sm:px-4 mt-2 space-y-1">
-            <div className="text-sm text-gray-300">
-              Total Items: <span className="font-medium text-white">{cart.totalItems}</span>
+            <div className="text-sm text-[color:var(--color-muted)]">
+              Total Items: <span className="font-medium text-[color:var(--color-text)]">{cart.totalItems}</span>
             </div>
-            <div className="text-sm text-gray-300">
-              Subtotal: <span className="font-medium text-white">{formatMoney(subtotal)}</span>
+            <div className="text-sm text-[color:var(--color-muted)]">
+              Subtotal: <span className="font-medium text-[color:var(--color-text)]">{formatMoney(subtotal)}</span>
             </div>
             {charges.discount.trim() ? (
-              <div className="text-sm text-gray-300">
+              <div className="text-sm text-[color:var(--color-muted)]">
                 Discount:{" "}
                 <span className="font-medium text-red-400">
                   -{formatMoney(discountAmount)}
@@ -810,18 +810,18 @@ export default function PreviewPage() {
               </div>
             ) : null}
             {combinedLabourTransport > 0 ? (
-              <div className="text-sm text-gray-300">
+              <div className="text-sm text-[color:var(--color-muted)]">
                 {labourAmount > 0 && transportAmount > 0
                   ? "Labour & Transport Charges:"
                   : labourAmount > 0
                     ? "Labour Charges:"
                     : "Transport Charges:"}{" "}
-                <span className="font-medium text-white">
+                <span className="font-medium text-[color:var(--color-text)]">
                   {formatMoney(combinedLabourTransport)}
                 </span>
               </div>
             ) : null}
-            <div className="text-sm text-gray-300 border-t border-gray-700 pt-2">
+            <div className="text-sm text-[color:var(--color-muted)] border-t border-[color:var(--color-border)] pt-2">
               Total Amount:{" "}
               <span className="font-semibold text-[color:var(--color-primary)]">
                 {formatMoney(grandTotal)}
@@ -850,19 +850,20 @@ export default function PreviewPage() {
           />
           {pdfUrl && showPreview && (
             <div ref={previewRef} id="pdf-preview" className="mt-4">
-              <h4 className="text-white font-medium mb-2">PDF Preview</h4>
+              <h4 className="text-[color:var(--color-text)] font-medium mb-2">PDF Preview</h4>
               <iframe
                 src={pdfUrl}
-                className="w-full h-[70vh] rounded-lg border border-gray-800 bg-[#0c1323]"
+                title="PDF preview"
+                className="w-full h-[56vh] sm:h-[70vh] rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-bg)]"
               />
             </div>
           )}
         </div>
       )}
-      <div className="fixed inset-x-0 bottom-0 bg-[color:var(--color-card)] border-t border-gray-700">
-        <div className="max-w-5xl mx-auto px-4 py-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="fixed inset-x-0 bottom-0 bg-[color:var(--color-card)] border-t border-[color:var(--color-border)]">
+        <div className="mx-auto w-full max-w-[1200px] px-4 py-3 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
-            className="inline-flex items-center justify-center gap-2 border border-gray-700 rounded-xl py-3 text-gray-300 hover:border-[color:var(--color-primary)] hover:text-white transition disabled:opacity-40"
+            className="inline-flex items-center justify-center gap-2 border border-[color:var(--color-border)] rounded-xl py-3 text-[color:var(--color-muted)] hover:border-[color:var(--color-primary)] hover:text-white transition disabled:opacity-40"
             onClick={ensurePdfAndTogglePreview}
             disabled={lines.length === 0}
             title={!formValid ? "Fill the customer form to preview" : showPreview ? "Hide Preview" : "Preview PDF"}
@@ -883,3 +884,7 @@ export default function PreviewPage() {
     </main>
   );
 }
+
+
+
+

@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { Item } from "@/types";
 import { useCart } from "@/context/CartContext";
-import dynamic from "next/dynamic";
 
 const QtyStepper = dynamic(() => import("./QtyStepper"), { ssr: false });
 
@@ -12,7 +12,6 @@ export default function ItemCard({ item }: { item: Item }) {
   const cart = useCart();
   const qty = cart.visibleQtyFor(item);
   const [currentIndex, setCurrentIndex] = useState(0);
-
   const images = item.imageAssets || [];
 
   const handleNext = () => {
@@ -21,58 +20,48 @@ export default function ItemCard({ item }: { item: Item }) {
 
   return (
     <div
-      className="w-full min-w-[100px] max-w-[140px] rounded-xl border border-gray-700 shadow-sm p-2 flex flex-col bg-[color:var(--color-card)] hover:shadow-md transition-all duration-200 hover:border-[color:var(--color-primary)]"
+      className="flex w-full min-w-0 max-w-[200px] flex-col rounded-xl border p-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+      style={{ backgroundColor: "var(--color-card)", borderColor: "var(--color-border)" }}
     >
-      {/* Image Section */}
       <div
-        className="relative w-full h-[110px] flex justify-center items-center overflow-hidden rounded-lg bg-[#0f1629] cursor-pointer"
+        className="relative flex h-[120px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl"
+        style={{ backgroundColor: "var(--color-bg)" }}
         onClick={handleNext}
       >
         {images.length > 0 ? (
-          <div className="relative w-full h-full">
+          <div className="relative h-full w-full">
             <Image
               src={images[currentIndex]}
               alt={item.name}
               fill
-              className="object-contain p-2 select-none"
+              className="select-none object-contain p-2"
               priority={false}
               unoptimized
             />
           </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+          <div className="flex h-full w-full items-center justify-center text-xs" style={{ color: "var(--color-muted)" }}>
             No image
           </div>
         )}
 
-        {/* Dots indicator only */}
         {images.length > 1 && (
-          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+          <div className="absolute bottom-1 left-1/2 flex -translate-x-1/2 gap-1">
             {images.map((_, i) => (
               <span
                 key={i}
-                className={`w-1.5 h-1.5 rounded-full ${
-                  i === currentIndex
-                    ? "bg-[color:var(--color-primary)]"
-                    : "bg-gray-500"
-                }`}
+                className={`h-1.5 w-1.5 rounded-full ${i === currentIndex ? "bg-[color:var(--color-primary)]" : "bg-[color:var(--color-border)]"}`}
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* Item Info */}
-      <div className="mt-2 text-center flex flex-col justify-between flex-grow">
-        <div className="font-semibold text-[13px] sm:text-sm line-clamp-2 min-h-[32px] text-[color:var(--color-ink)]">
-          {item.name}
-        </div>
-        <div className="text-[12px] font-medium text-green-400 mt-1">
-          ₹{item.price.toFixed(0)}
-        </div>
+      <div className="mt-2 flex flex-grow flex-col justify-between text-center">
+        <div className="min-h-[32px] line-clamp-2 text-[13px] font-semibold sm:text-sm">{item.name}</div>
+        <div className="mt-1 text-[12px] font-semibold text-[color:var(--color-primary)]">?{item.price.toFixed(0)}</div>
       </div>
 
-      {/* Quantity Controls */}
       <div className="mt-2">
         <QtyStepper
           value={qty}
@@ -85,3 +74,4 @@ export default function ItemCard({ item }: { item: Item }) {
     </div>
   );
 }
+
