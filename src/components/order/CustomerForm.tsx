@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useMemo, useState } from "react";
 import type { CustomerForm } from "@/types/order";
 import { validateCustomer, validators } from "@/lib/validation/customer";
@@ -18,14 +17,9 @@ import {
   uiFieldClass,
 } from "@/components/ui/Field";
 import { RefreshCcw, LocateFixed, X, Pen, Trash2 } from "lucide-react";
-
 /* =================== Config =================== */
-// ❗ Use a REFERRER-restricted browser key only:
 const PUBLIC_MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-/* ✅ Fixed country code for India */
-const PHONE_CC = "91"; // stored as: 91XXXXXXXXXX (digits only)
-
+const PHONE_CC = "91";
 /* ✅ Shared initial touched */
 const INITIAL_TOUCHED: Record<keyof CustomerForm, boolean> = {
   name: false,
@@ -36,15 +30,11 @@ const INITIAL_TOUCHED: Record<keyof CustomerForm, boolean> = {
   address: false,
   mapUrl: false,
 };
-
 /* ============ Client-only helpers ============ */
-/** No server in static Pages, so we can't truly unshorten safely. */
 async function clientUnshortenNoop(_u: string): Promise<string | null> {
   void _u;
   return null;
 }
-
-/** Optional client-side geocode (only if a safe NEXT_PUBLIC key is provided). */
 async function clientGeocodeOptional(location: string): Promise<string | null> {
   if (!PUBLIC_MAPS_KEY) return null;
   try {
@@ -60,9 +50,23 @@ async function clientGeocodeOptional(location: string): Promise<string | null> {
     return null;
   }
 }
-
+/* =================== Phone helpers =================== */
+function normalizeIndianPhoneInput(raw: string) {
+  let digits = raw.replace(/[^\d]/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("0")) {
+    digits = digits.replace(/^0+/, "");
+  }
+  if (digits.startsWith(PHONE_CC)) {
+    return digits.slice(0, 12);
+  }
+  return (PHONE_CC + digits).slice(0, 12);
+}
+function getDisplayPhone(raw?: string) {
+  const digits = (raw ?? "").replace(/[^\d]/g, "");
+  return digits;
+}
 /* =================== UI Component =================== */
-
 export type CustomerFormProps = {
   value: CustomerForm;
   onChange: (next: CustomerForm) => void;
@@ -72,7 +76,6 @@ export type CustomerFormProps = {
   onEdit?: () => void;
   onDelete?: () => void;
 };
-
 const EVENT_OPTIONS = [
   "Marriage",
   "Reception",
@@ -87,7 +90,6 @@ const EVENT_OPTIONS = [
   "Baby Shower",
   "Others",
 ];
-
 export default function CustomerFormCard({
   value,
   onChange,
@@ -100,40 +102,25 @@ export default function CustomerFormCard({
   const [touched, setTouched] =
     useState<Record<keyof CustomerForm, boolean>>(INITIAL_TOUCHED);
   const [autoFillAddress, setAutoFillAddress] = useState(true);
-
-  // ✅ If not editing, don't show validations (reset touched)
   useEffect(() => {
     if (!editing) setTouched(INITIAL_TOUCHED);
   }, [editing]);
-
-  const { valid } = useMemo(() => validateCustomer(value), [value]);
-
   const [mapEmbed, setMapEmbed] = useState<string | null>(null);
   const [isShortMap, setIsShortMap] = useState(false);
   const [lastGuess, setLastGuess] = useState<string | null>(null);
-
-  // ✅ Show Delete only if there is any input in the form
   const hasAnyValue = useMemo(() => {
     return Object.entries(value as Record<string, unknown>).some(([_, v]) => {
       if (typeof v === "string") return v.trim().length > 0;
       return v != null;
     });
   }, [value]);
-
-  // ✅ local-part for UI (10 digits). Stored value remains digits-only with CC: "91" + local
-  const phoneLocal = useMemo(() => {
-    const raw = (value.phone ?? "").replace(/[^\d]/g, "");
-    if (!raw) return "";
-    return raw.startsWith(PHONE_CC) ? raw.slice(PHONE_CC.length) : raw;
+  const phoneDisplay = useMemo(() => {
+    return getDisplayPhone(value.phone);
   }, [value.phone]);
-
   const setField = <K extends keyof CustomerForm>(key: K, v: CustomerForm[K]) =>
     onChange({ ...value, [key]: v });
-
-  // ---- Map input normalization / preview / autofill ----
   useEffect(() => {
     let canceled = false;
-
     (async () => {
       if (!value.mapUrl) {
         if (canceled) return;
@@ -142,10 +129,7 @@ export default function CustomerFormCard({
         setLastGuess(null);
         return;
       }
-
       const working = value.mapUrl;
-
-      // 1) Short links: without a server we *cannot* expand. Try a noop, keep UX note.
       if (isGoogleShortLink(working)) {
         const finalUrl = await clientUnshortenNoop(working);
         if (canceled) return;
@@ -154,8 +138,6 @@ export default function CustomerFormCard({
           return;
         }
       }
-
-      // 2) DMS
       const dms = parseDMSPair(working);
       if (dms) {
         const embed = buildEmbedFromLatLng(dms.lat, dms.lng);
@@ -163,7 +145,6 @@ export default function CustomerFormCard({
         setMapEmbed(embed);
         setIsShortMap(false);
         setLastGuess(`${dms.lat}, ${dms.lng}`);
-
         if (
           autoFillAddress &&
           (!value.address || value.address.trim().length < 6)
@@ -173,8 +154,6 @@ export default function CustomerFormCard({
         }
         return;
       }
-
-      // 3) Decimal pair
       const dec = parseDecimalPair(working);
       if (dec) {
         const embed = buildEmbedFromLatLng(dec.lat, dec.lng);
@@ -182,7 +161,6 @@ export default function CustomerFormCard({
         setMapEmbed(embed);
         setIsShortMap(false);
         setLastGuess(`${dec.lat}, ${dec.lng}`);
-
         if (
           autoFillAddress &&
           (!value.address || value.address.trim().length < 6)
@@ -192,13 +170,10 @@ export default function CustomerFormCard({
         }
         return;
       }
-
-      // 4) Generic URL/iframe
       const norm = normalizeMapInput(working);
       if (canceled) return;
       setMapEmbed(norm.embedSrc);
       setIsShortMap(norm.shortLink);
-
       const latLng = norm.embedSrc ? extractLatLngFromEmbed(norm.embedSrc) : null;
       if (latLng) {
         setLastGuess(`${latLng.lat}, ${latLng.lng}`);
@@ -220,23 +195,11 @@ export default function CustomerFormCard({
         }
       }
     })();
-
     return () => {
       canceled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value.mapUrl, autoFillAddress]);
-
-  const minNow = useMemo(() => {
-    const d = new Date();
-    d.setSeconds(0, 0);
-    const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
-      d.getDate()
-    )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }, []);
-
-  // ---- Toolbar actions (outside the input) ----
   const handleSyncAddress = async () => {
     const latLng = mapEmbed ? extractLatLngFromEmbed(mapEmbed) : null;
     if (latLng) {
@@ -246,7 +209,6 @@ export default function CustomerFormCard({
     }
     if (lastGuess) onChange({ ...value, address: lastGuess });
   };
-
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) return alert("Geolocation is not supported.");
     navigator.geolocation.getCurrentPosition(
@@ -268,19 +230,16 @@ export default function CustomerFormCard({
       { enableHighAccuracy: true, timeout: 10000 }
     );
   };
-
   const clearMapUrl = () => {
     onChange({ ...value, mapUrl: "" });
     setMapEmbed(null);
     setLastGuess(null);
   };
-
   return (
     <div className="rounded-xl border border-gray-800 bg-[#101729] p-4 space-y-4">
       {showHeader && (
         <div className="flex items-center justify-between">
           <h3 className="text-white font-semibold text-lg">Customer Details</h3>
-
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -291,8 +250,6 @@ export default function CustomerFormCard({
             >
               <Pen className="w-4 h-4" />
             </button>
-
-            {/* ✅ Delete only when there is some input */}
             {hasAnyValue && (
               <button
                 type="button"
@@ -307,8 +264,6 @@ export default function CustomerFormCard({
           </div>
         </div>
       )}
-
-      {/* Row 1 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <InputField
           label="Full Name"
@@ -323,67 +278,49 @@ export default function CustomerFormCard({
           hint="Enter at least 2 characters."
           onClear={() => setField("name", "")}
         />
-
-        {/* ✅ Phone with fixed +91 prefix (UI) and digits-only storage (value.phone) */}
         <div className="flex flex-col">
           <label className="text-xs text-gray-400 mb-1">
             WhatsApp Phone (India)
           </label>
-
           <div className="relative">
-            <div className="flex">
-              <div className="px-3 py-2 rounded-l-md border border-gray-700 bg-[#0c1323] text-gray-200 text-sm flex items-center">
-                +91
-              </div>
-
-              <input
-                className={
-                  uiFieldClass(
-                    editing && !!touched.phone && !validators.phone(value.phone),
-                    editing
-                  ) + " rounded-l-none pr-10"
-                }
-                placeholder="e.g., 98XXXXXXXX"
-                value={phoneLocal}
-                disabled={!editing}
-                inputMode="numeric"
-                autoComplete="tel-national"
-                maxLength={10}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  let digits = e.target.value.replace(/[^\d]/g, "");
-                  if (digits.startsWith(PHONE_CC))
-                    digits = digits.slice(PHONE_CC.length);
-                  digits = digits.slice(0, 10);
-                  setField("phone", digits ? PHONE_CC + digits : "");
-                }}
-                onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
-              />
-
-              {/* ✅ show clear only when local part has digits */}
-              {editing && phoneLocal.trim().length > 0 && (
-                <button
-                  type="button"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[#1b2340]"
-                  onClick={() => setField("phone", "")}
-                  aria-label="Clear"
-                  title="Clear"
-                >
-                  <X className="w-4 h-4 text-gray-300" />
-                </button>
-              )}
-            </div>
+            <input
+              className={
+                uiFieldClass(
+                  editing && !!touched.phone && !validators.phone(value.phone),
+                  editing
+                ) + " pr-10"
+              }
+              placeholder="e.g., +919180234546 or 9180234546"
+              value={phoneDisplay}
+              disabled={!editing}
+              inputMode="numeric"
+              autoComplete="tel"
+              maxLength={13}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const normalized = normalizeIndianPhoneInput(e.target.value);
+                setField("phone", normalized);
+              }}
+              onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
+            />
+            {editing && phoneDisplay.trim().length > 0 && (
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[#1b2340]"
+                onClick={() => setField("phone", "")}
+                aria-label="Clear"
+                title="Clear"
+              >
+                <X className="w-4 h-4 text-gray-300" />
+              </button>
+            )}
           </div>
-
-          {/* ✅ show phone validation only while editing */}
           {editing && touched.phone && !validators.phone(value.phone) && (
             <p className="mt-1 text-[11px] text-amber-300">
-              Enter a valid number (stored as 91XXXXXXXXXX).
+              Enter a valid Indian number like 9180234546 or +919180234546.
             </p>
           )}
         </div>
       </div>
-
-      {/* Row 2 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <SelectField
           label="Event Type"
@@ -407,13 +344,10 @@ export default function CustomerFormCard({
             </option>
           ))}
         </SelectField>
-
-        {/* Start (From) */}
         <InputField
           type="datetime-local"
           label="Start (From)"
           value={value.startDateTime}
-          min={minNow}
           disabled={!editing}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             const nextStart = e.target.value;
@@ -422,7 +356,6 @@ export default function CustomerFormCard({
               ? new Date(value.endDateTime.replace("T", " ") + ":00")
               : null;
             let nextEnd = value.endDateTime;
-
             if (s.toString() !== "Invalid Date") {
               if (!eDate || eDate.getTime() <= s.getTime()) {
                 const tmp = new Date(s.getTime() + 24 * 60 * 60 * 1000);
@@ -437,24 +370,17 @@ export default function CustomerFormCard({
             onChange({ ...value, startDateTime: nextStart, endDateTime: nextEnd });
           }}
           onBlur={() => setTouched((t) => ({ ...t, startDateTime: true }))}
-          invalid={
-            editing &&
-            !!touched.startDateTime &&
-            !validators.startDateTime(value.startDateTime)
-          }
-          hint="Must be a future date & time"
+          invalid={editing && !!touched.startDateTime && !validators.startDateTime(value.startDateTime)}
           onClear={() => setField("startDateTime", "")}
         />
       </div>
-
-      {/* Row 3 — End (To) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="hidden sm:block" />
         <InputField
           type="datetime-local"
           label="End (To)"
           value={value.endDateTime}
-          min={value.startDateTime || minNow}
+          min={value.startDateTime || undefined}
           disabled={!editing}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setField("endDateTime", e.target.value)
@@ -465,12 +391,10 @@ export default function CustomerFormCard({
             !!touched.endDateTime &&
             !validators.endDateTime(value.endDateTime, value.startDateTime)
           }
-          hint="Must be after Start and in the future"
+          hint="Must be after Start"
           onClear={() => setField("endDateTime", "")}
         />
       </div>
-
-      {/* Address */}
       <TextareaField
         label="Address"
         placeholder="House / Street, Area, City, State, PIN"
@@ -484,14 +408,11 @@ export default function CustomerFormCard({
         hint="At least 6 characters"
         onClear={() => setField("address", "")}
       />
-
-      {/* Map URL + right toolbar */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="flex flex-col">
           <label className="text-xs text-gray-400 mb-1">
             Google Map URL / iframe / coordinates (optional)
           </label>
-
           <div className="flex items-stretch gap-2">
             <input
               className={
@@ -508,7 +429,6 @@ export default function CustomerFormCard({
               }
               onBlur={() => setTouched((t) => ({ ...t, mapUrl: true }))}
             />
-
             <div className="flex items-center gap-1">
               {editing && value.mapUrl?.trim() ? (
                 <button
@@ -521,7 +441,6 @@ export default function CustomerFormCard({
                   <X className="w-4 h-4" />
                 </button>
               ) : null}
-
               <button
                 type="button"
                 title="Use my current location"
@@ -532,7 +451,6 @@ export default function CustomerFormCard({
               >
                 <LocateFixed className="w-4 h-4" />
               </button>
-
               <button
                 type="button"
                 title="Sync parsed location into Address"
@@ -545,16 +463,12 @@ export default function CustomerFormCard({
               </button>
             </div>
           </div>
-
-          {/* ✅ show map short-link warning only while editing */}
           {editing && isShortMap && (
             <p className="mt-1 text-[11px] text-amber-300">
               Short link detected. Static deploys can’t expand short links. Open it once and
               paste the full Google Maps URL or the “Embed map” iframe.
             </p>
           )}
-
-          {/* ✅ show map validation only while editing */}
           {editing && !!touched.mapUrl && !validators.mapUrlOptional(value.mapUrl) && (
             <p className="mt-1 text-[11px] text-amber-300">
               Must be a Google Maps URL/iframe, a decimal pair like{" "}
@@ -562,15 +476,12 @@ export default function CustomerFormCard({
               <code>18°26&apos;24.3&quot;N 79°06&apos;23.1&quot;E</code>.
             </p>
           )}
-
           {lastGuess && (
             <p className="mt-1 text-[11px] text-gray-400">
               Parsed location: <span className="text-gray-200">{lastGuess}</span>
             </p>
           )}
         </div>
-
-        {/* Auto-fill toggle */}
         <div className="flex flex-col justify-end">
           <label className="inline-flex items-center gap-2 text-xs text-gray-300 cursor-pointer">
             <input
@@ -586,8 +497,6 @@ export default function CustomerFormCard({
           </label>
         </div>
       </div>
-
-      {/* Map preview */}
       {mapEmbed && (
         <div>
           <p className="text-[12px] text-gray-400">Map preview</p>
@@ -600,15 +509,6 @@ export default function CustomerFormCard({
           />
         </div>
       )}
-
-      {/* ✅ show global invalid message only while editing */}
-      {editing && !valid && (
-        <p className="text-xs text-amber-300">
-          Please fill all required fields correctly (name, phone, event, date/time,
-          address).
-        </p>
-      )}
-
       {onSubmit && (
         <div className="flex items-center gap-2">
           <button
