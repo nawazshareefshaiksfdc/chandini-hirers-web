@@ -1,14 +1,12 @@
 import { jsPDF, type TextOptionsLight } from "jspdf";
 import type { Item } from "@/types";
-
 /* =========================== Types =========================== */
 export type Line = { item: Item; qty: number; lineTotal: number };
-
 type NavigatorWithMsSave = Navigator & {
   msSaveOrOpenBlob?: (blob: Blob, defaultName?: string) => boolean;
 };
 type NextDataPartial = { assetPrefix?: string; basePath?: string };
-
+type DiscountType = "amount" | "percent";
 /* ===================== INR formatting ======================== */
 const INR0 = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -19,55 +17,45 @@ const INR0 = new Intl.NumberFormat("en-IN", {
 function formatINR(amount: number, fontsOk: boolean) {
   return fontsOk ? INR0.format(amount) : "Rs " + Math.round(amount).toLocaleString("en-IN");
 }
-
 /* ===================== Date formatting ======================= */
 /** ✅ "14 DEC 2025 4: 20 PM" */
 function formatChandiniDateTime(input?: string | Date | null) {
   if (!input) return "";
   const d = input instanceof Date ? input : new Date(input);
   if (Number.isNaN(d.getTime())) return typeof input === "string" ? input : "";
-
   const day = String(d.getDate()).padStart(2, "0");
   const mon = d.toLocaleString("en-US", { month: "short" }).toUpperCase();
   const year = d.getFullYear();
-
   let hrs = d.getHours();
   const mins = String(d.getMinutes()).padStart(2, "0");
   const ampm = hrs >= 12 ? "PM" : "AM";
   hrs = hrs % 12;
   if (hrs === 0) hrs = 12;
-
   return `${day} ${mon} ${year} ${hrs}: ${mins} ${ampm}`;
 }
-
 function toLinkableUrl(raw?: string): string | null {
   if (!raw) return null;
   const s = raw.trim();
   if (/^https?:\/\//i.test(s)) return s;
-
   if (/^\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*$/.test(s)) {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s)}`;
   }
   return null;
 }
-
 /* ============ Asset loading state (fonts/icons) ============== */
 let fontsReady = false;
 let fontsOk = false;
 let fontsPromise: Promise<void> | null = null;
 let dejavuRegB64: string | null = null;
 let dejavuBoldB64: string | null = null;
-
 let iconsReady = false;
 let iconsPromise: Promise<void> | null = null;
 let iconInstagramB64: string | null = null;
 let iconWhatsAppB64: string | null = null;
 let iconYouTubeB64: string | null = null;
 let iconMapPinB64: string | null = null;
-
 export const arePdfFontsReady = () => fontsReady;
 export const didPdfFontsLoad = () => fontsOk;
-
 /* ===================== Resolve asset URLs ==================== */
 function getBasePrefix(): string {
   try {
@@ -77,7 +65,7 @@ function getBasePrefix(): string {
       if (typeof d.assetPrefix === "string" && d.assetPrefix.length > 0) return d.assetPrefix;
       if (typeof d.basePath === "string" && d.basePath.length > 0) return d.basePath;
     }
-  } catch {}
+  } catch { }
   const envBase = process.env.NEXT_PUBLIC_BASE_PATH;
   if (typeof envBase === "string" && envBase.length > 0) return envBase;
   if (typeof document !== "undefined") {
@@ -92,7 +80,6 @@ function withBase(path: string): string {
   const clean = path.startsWith("/") ? path.slice(1) : path;
   return prefix ? `${prefix}/${clean}` : `/${clean}`;
 }
-
 /* ========================= Utilities ========================= */
 async function toBase64(buf: ArrayBuffer) {
   let binary = "";
@@ -109,7 +96,6 @@ async function fetchAsBase64(url: string, cacheMode: RequestCache = "force-cache
   const buf = await res.arrayBuffer();
   return toBase64(buf);
 }
-
 /* ========================= Fonts ============================= */
 async function _loadFonts() {
   try {
@@ -146,12 +132,11 @@ async function ensureFonts(doc: jsPDF) {
     doc.addFont("DejaVuSans-Bold.ttf", "DejaVu", "bold");
     try {
       doc.setFont("DejaVu", "normal");
-    } catch {}
+    } catch { }
   } else {
     doc.setFont("helvetica", "normal");
   }
 }
-
 /* ========================= Icons ============================= */
 async function _loadIcons() {
   try {
@@ -176,7 +161,6 @@ async function ensureIcons() {
   if (!iconsPromise) iconsPromise = _loadIcons();
   await iconsPromise;
 }
-
 /* ======================== Watermark ========================== */
 function drawTiledDiagonalWatermark(doc: jsPDF, text: string) {
   const width = doc.internal.pageSize.getWidth();
@@ -186,11 +170,9 @@ function drawTiledDiagonalWatermark(doc: jsPDF, text: string) {
     stepY = 80,
     size = 9,
     gray = 200;
-
   doc.saveGraphicsState?.();
   doc.setTextColor(gray, gray, gray);
   doc.setFontSize(size);
-
   for (let y = -stepY; y < height + stepY; y += stepY) {
     for (let x = -stepX; x < width + stepX; x += stepX) {
       doc.text(text, x, y, { angle });
@@ -198,7 +180,6 @@ function drawTiledDiagonalWatermark(doc: jsPDF, text: string) {
   }
   doc.restoreGraphicsState?.();
 }
-
 /* ======================== Footer icons ====================== */
 function addFooterIcons(doc: jsPDF) {
   const pageW = doc.internal.pageSize.getWidth();
@@ -208,7 +189,6 @@ function addFooterIcons(doc: jsPDF) {
   const centerY = pageH - margin;
   const iconSize = 18;
   const gap = 18;
-
   doc.setFontSize(10);
   try {
     doc.setFont("DejaVu", "bold");
@@ -216,9 +196,7 @@ function addFooterIcons(doc: jsPDF) {
     doc.setFont("helvetica", "bold");
   }
   doc.text("Connect:", margin, centerY);
-
   let x = margin + doc.getTextWidth("Connect:") + 16;
-
   const icons: Array<{ b64: string | null; fmt: "PNG" | "JPEG"; url: string }> = [
     { b64: iconInstagramB64, fmt: "PNG", url: "https://www.instagram.com/chandhinihirers_nellore/" },
     {
@@ -229,7 +207,6 @@ function addFooterIcons(doc: jsPDF) {
     { b64: iconYouTubeB64, fmt: "PNG", url: "https://www.youtube.com/@chandhinihirers_nellore" },
     { b64: iconMapPinB64, fmt: "PNG", url: "https://maps.app.goo.gl/o3orgsRNWrdUJZh76" },
   ];
-
   icons.forEach((ico) => {
     if (ico.b64) {
       const mime = ico.fmt === "PNG" ? "image/png" : "image/jpeg";
@@ -244,18 +221,29 @@ function addFooterIcons(doc: jsPDF) {
     }
   });
 }
-
 /* ==================== PDF Builder =========================== */
 export async function generateCartPdfBytes({
   title = "Chandini Hirers",
   lines,
   totalItems,
+  subtotal = 0,
+  labourCharges = 0,
+  transportCharges = 0,
+  discount = 0,
+  discountType = "amount",
+  discountValue = "",
   totalAmount,
   customer,
 }: {
   title?: string;
   lines: Line[];
   totalItems: number;
+  subtotal?: number;
+  labourCharges?: number;
+  transportCharges?: number;
+  discount?: number;
+  discountType?: DiscountType;
+  discountValue?: string;
   totalAmount: number;
   customer?: {
     name?: string;
@@ -268,23 +256,16 @@ export async function generateCartPdfBytes({
   };
 }) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
-
   await ensureFonts(doc);
   await ensureIcons();
-
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 40;
-
   const colItemX = margin + 10;
   const colQtyX = pageWidth - 180;
   const colAmtRight = pageWidth - margin;
   const RIGHT: TextOptionsLight = { align: "right" } as const;
-
-  // ✅ FIX: Generated time in required format (NOT ISO)
   const dateStr = formatChandiniDateTime(new Date());
-
-  // ---------- spacing & metrics ----------
   const FONT_SIZE_BODY = 11;
   const LINE_H = 14;
   const DETAILS_TABLE_GAP = 18;
@@ -294,8 +275,6 @@ export async function generateCartPdfBytes({
   const ROW_MIN_H = 28;
   const ROW_GAP = 8;
   const IMG_SIZE = 28;
-
-  // ------- image loader -------
   const imageCache = new Map<string, string>();
   async function getItemImageB64(url: string): Promise<{ dataUrl: string; fmt: "JPEG" | "PNG" } | null> {
     const key = url;
@@ -307,24 +286,19 @@ export async function generateCartPdfBytes({
       const res = await fetch(withBase(url), { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const buf = await res.arrayBuffer();
-
       const isPng = /\.png(\?|#|$)/i.test(url);
       const b64 = await toBase64(buf);
       const mime = isPng ? "image/png" : "image/jpeg";
       const fmt: "PNG" | "JPEG" = isPng ? "PNG" : "JPEG";
       const dataUrl = `data:${mime};base64,${b64}`;
-
       imageCache.set(key, dataUrl);
       return { dataUrl, fmt };
     } catch {
       return null;
     }
   }
-
   const drawHeader = () => {
     drawTiledDiagonalWatermark(doc, "chandini hirers");
-
-    // Title
     doc.setFontSize(16);
     try {
       doc.setFont("DejaVu", "bold");
@@ -332,15 +306,12 @@ export async function generateCartPdfBytes({
       doc.setFont("helvetica", "bold");
     }
     doc.text(title, margin, margin + 10);
-
-    // Details
     doc.setFontSize(11);
     try {
       doc.setFont("DejaVu", "normal");
     } catch {
       doc.setFont("helvetica", "normal");
     }
-
     const kv: Array<[label: string, value?: string]> = [
       ["Generated:", dateStr],
       ["Customer:", customer?.name || ""],
@@ -351,17 +322,13 @@ export async function generateCartPdfBytes({
       ["Address:", customer?.address || ""],
       ["Map:", customer?.mapUrl || ""],
     ];
-
     const labelPad = 8;
     const labels = kv.map(([l]) => l);
     const maxLabelW = Math.max(...labels.map((l) => doc.getTextWidth(l)));
     const valueX = margin + maxLabelW + labelPad;
-
     let y = margin + 28;
-
     for (const [label, val] of kv) {
       doc.text(label, margin, y);
-
       if (val && val.trim()) {
         if (label === "Map:") {
           const url = toLinkableUrl(val);
@@ -400,18 +367,13 @@ export async function generateCartPdfBytes({
           }
         }
       }
-
       y += LINE_H;
     }
-
-    // Table header
     const thTop = Math.max(y + DETAILS_TABLE_GAP, margin + 70);
     const thLeft = margin;
     const thWidth = pageWidth - margin * 2;
-
     doc.setFillColor(240, 240, 240);
     doc.rect(thLeft, thTop, thWidth, HEADER_BAR_HEIGHT, "F");
-
     try {
       doc.setFont("DejaVu", "bold");
     } catch {
@@ -421,22 +383,17 @@ export async function generateCartPdfBytes({
     doc.text("Item", colItemX, thBaseline);
     doc.text("Qty", colQtyX, thBaseline);
     doc.text("Amount", colAmtRight, thBaseline, RIGHT);
-
     return thTop + HEADER_BAR_HEIGHT + HEADER_ITEMS_GAP + LINE_H;
   };
-
   let y = drawHeader();
-
   const textX = margin + IMG_SIZE + 8;
   const nameColumnWidth = colQtyX - textX - 10;
-
   try {
     doc.setFont("DejaVu", "normal");
   } catch {
     doc.setFont("helvetica", "normal");
   }
   doc.setFontSize(FONT_SIZE_BODY);
-
   for (const l of lines) {
     if (y > pageHeight - margin - 120) {
       addFooterIcons(doc);
@@ -449,60 +406,83 @@ export async function generateCartPdfBytes({
       }
       doc.setFontSize(FONT_SIZE_BODY);
     }
-
     const priceStr = formatINR(l.item.price, fontsOk);
     const amountStr = formatINR(l.lineTotal, fontsOk);
     const imgUrl = l.item.previewImage || l.item.imageAssets?.[0] || "/images/placeholder.jpeg";
-
     const wrapped = doc.splitTextToSize(`${l.item.name} (${priceStr})`, nameColumnWidth) as string[];
     const textBlockH = Math.max(LINE_H, wrapped.length * LINE_H);
     const rowH = Math.max(ROW_MIN_H, textBlockH, IMG_SIZE);
-
     const rowTop = y - LINE_H;
     const rowBottom = rowTop + rowH;
-
     const imgY = rowTop + (rowH - IMG_SIZE) / 2;
     if (imgUrl) {
       try {
         const img = await getItemImageB64(imgUrl);
         if (img) doc.addImage(img.dataUrl, img.fmt, margin, imgY, IMG_SIZE, IMG_SIZE);
-      } catch {}
+      } catch { }
     }
-
     const textTop = rowTop + (rowH - textBlockH) / 2;
     const BASELINE_OFFSET = FONT_SIZE_BODY;
     const textBaseline = textTop + BASELINE_OFFSET;
-
     doc.text(wrapped, textX, textBaseline);
     doc.text(String(l.qty), colQtyX, textBaseline);
     doc.text(amountStr, colAmtRight, textBaseline, RIGHT);
-
     y = rowBottom + ROW_GAP + LINE_H;
   }
-
   // Totals
   y += 10;
   doc.setDrawColor(200, 200, 200);
   doc.line(margin, y, pageWidth - margin, y);
   y += 24;
-
   try {
     doc.setFont("DejaVu", "bold");
   } catch {
     doc.setFont("helvetica", "bold");
   }
-  doc.text("Total Items:", pageWidth - 250, y);
-  doc.text(String(totalItems), colAmtRight, y, RIGHT);
-  y += ROW_MIN_H;
-
-  const totalText = fontsOk ? INR0.format(totalAmount) : "Rs " + Math.round(totalAmount).toLocaleString("en-IN");
-  doc.text("Total Amount:", pageWidth - 250, y);
-  doc.text(totalText, colAmtRight, y, RIGHT);
-
+  const combinedLabourTransport = (labourCharges || 0) + (transportCharges || 0);
+  // left and right columns for totals section
+  const totalsLabelX = margin + 260; // move labels more to the left
+  const totalsAmountX = colAmtRight; // keep amount aligned right
+  const totalsMaxWidth = totalsAmountX - totalsLabelX - 20;
+  function drawTotalRow(label: string, value: string) {
+    const wrappedLabel = doc.splitTextToSize(label, totalsMaxWidth) as string[];
+    const labelLines = wrappedLabel.length || 1;
+    const rowHeight = Math.max(ROW_MIN_H, labelLines * LINE_H);
+    doc.text(wrappedLabel, totalsLabelX, y);
+    doc.text(value, totalsAmountX, y, RIGHT);
+    y += rowHeight;
+  }
+  drawTotalRow("Total Items:", String(totalItems));
+  drawTotalRow("Subtotal:", formatINR(subtotal || 0, fontsOk));
+  if ((discount || 0) > 0) {
+    let discountLabel = "Discount:";
+    if (discountValue && String(discountValue).trim()) {
+      discountLabel =
+        discountType === "percent"
+          ? `Discount (${discountValue}%):`
+          : `Discount (Rs ${discountValue}):`;
+    }
+    drawTotalRow(discountLabel, `- ${formatINR(discount || 0, fontsOk)}`);
+  }
+  if (combinedLabourTransport > 0) {
+    let chargeLabel = "Charges:";
+    if ((labourCharges || 0) > 0 && (transportCharges || 0) > 0) {
+      chargeLabel = "Labour & Transport Charges:";
+    } else if ((labourCharges || 0) > 0) {
+      chargeLabel = "Labour Charges:";
+    } else if ((transportCharges || 0) > 0) {
+      chargeLabel = "Transport Charges:";
+    }
+    drawTotalRow(chargeLabel, formatINR(combinedLabourTransport, fontsOk));
+  }
+  const totalText =
+    fontsOk
+      ? INR0.format(totalAmount)
+      : "Rs " + Math.round(totalAmount).toLocaleString("en-IN");
+  drawTotalRow("Grand Total:", totalText);
   addFooterIcons(doc);
   return doc.output("arraybuffer");
 }
-
 /* ===================== Filename builder ====================== */
 function pad2(n: number) {
   return n < 10 ? `0${n}` : String(n);
@@ -520,12 +500,10 @@ export function buildPdfFilename(customerName?: string, d: Date = new Date()) {
   const mm = pad2(d.getMinutes());
   return `${name}-${DD}-${MM}-${YYYY}-${hh}-${mm}.pdf`;
 }
-
 /* ===================== Robust Downloader ===================== */
 export function robustDownloadPdf(bytes: ArrayBuffer, filename?: string, customerNameForFallback?: string) {
   try {
     const finalName = filename && filename.trim().length > 0 ? filename : buildPdfFilename(customerNameForFallback);
-
     const blob = new Blob([bytes], { type: "application/pdf" });
     const nav = navigator as NavigatorWithMsSave;
     if (typeof nav.msSaveOrOpenBlob === "function") {
@@ -536,16 +514,13 @@ export function robustDownloadPdf(bytes: ArrayBuffer, filename?: string, custome
     const isIOS =
       /iP(ad|hone|od)/.test(navigator.platform) ||
       (navigator.userAgent.includes("Mac") && "ontouchend" in document);
-
     const a = document.createElement("a");
     a.href = url;
     a.rel = "noopener";
     a.target = isIOS ? "_blank" : "_self";
     if (!isIOS) a.download = finalName;
-
     document.body.appendChild(a);
     a.click();
-
     setTimeout(() => {
       URL.revokeObjectURL(url);
       a.remove();
