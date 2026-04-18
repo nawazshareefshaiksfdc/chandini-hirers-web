@@ -59,7 +59,7 @@ export default function ItemCard({ item }: { item: Item }) {
 
       <div className="mt-2 flex flex-grow flex-col justify-between text-center">
         <div className="min-h-[32px] line-clamp-2 text-[13px] font-semibold sm:text-sm">{item.name}</div>
-        <div className="mt-1 text-[12px] font-semibold text-[color:var(--color-primary)]">?{item.price.toFixed(0)}</div>
+        <div className="mt-1 text-[12px] font-semibold text-[color:var(--color-primary)]">₹ {item.price.toFixed(0)}</div>
       </div>
 
       <div className="mt-2">
